@@ -110,14 +110,46 @@ function estimateTemperature(category: string): { temperature: 'hot' | 'warm' | 
 
 async function geocodeLocation(query: string, apiKey: string): Promise<{ lat: number; lng: number } | null> {
   try {
-    const response = await fetch(
-      `https://maps.googleapis.com/maps/api/geocode/json?address=${encodeURIComponent(query)},Spain&key=${apiKey}`
-    );
+    // Try with components for postal codes (more accurate)
+    let url: string;
+    const isPostalCode = /^\d{5}$/.test(query.trim());
+    
+    if (isPostalCode) {
+      // Use components parameter for postal codes - more accurate
+      url = `https://maps.googleapis.com/maps/api/geocode/json?components=postal_code:${query}|country:ES&key=${apiKey}`;
+    } else {
+      // For city names, use address search
+      url = `https://maps.googleapis.com/maps/api/geocode/json?address=${encodeURIComponent(query)},España&key=${apiKey}`;
+    }
+    
+    console.log('Geocoding URL:', url.replace(apiKey, 'API_KEY_HIDDEN'));
+    
+    const response = await fetch(url);
     const data = await response.json();
+    
+    console.log('Geocoding response status:', data.status);
     
     if (data.status === 'OK' && data.results.length > 0) {
       const location = data.results[0].geometry.location;
+      console.log('Geocoded location:', location, 'for query:', query);
       return { lat: location.lat, lng: location.lng };
+    } else {
+      console.log('Geocoding failed for query:', query, 'Status:', data.status, 'Error:', data.error_message || 'No error message');
+      
+      // If postal code search failed, try as address
+      if (isPostalCode) {
+        console.log('Retrying postal code as address search...');
+        const fallbackUrl = `https://maps.googleapis.com/maps/api/geocode/json?address=${query},España&key=${apiKey}`;
+        const fallbackResponse = await fetch(fallbackUrl);
+        const fallbackData = await fallbackResponse.json();
+        
+        if (fallbackData.status === 'OK' && fallbackData.results.length > 0) {
+          const location = fallbackData.results[0].geometry.location;
+          console.log('Fallback geocoded location:', location);
+          return { lat: location.lat, lng: location.lng };
+        }
+        console.log('Fallback geocoding also failed:', fallbackData.status);
+      }
     }
   } catch (error) {
     console.error('Geocoding error:', error);
