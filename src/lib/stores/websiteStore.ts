@@ -54,22 +54,30 @@ export async function getStoredWebsites(): Promise<StoredWebsite[]> {
 // Save a website to database
 export async function saveWebsite(website: StoredWebsite): Promise<boolean> {
   try {
-    console.log('Saving website to database:', {
-      id: website.id,
-      business_name: website.businessName,
-      category: website.category,
-      address: website.address,
-      phone: website.phone,
-      html_length: website.html?.length || 0,
-    });
+    // Get current user
+    const { data: { user } } = await supabase.auth.getUser();
     
-    const { data, error } = await supabase.from('generated_websites').insert({
+    if (!user) {
+      console.error('No authenticated user found');
+      return false;
+    }
+    
+    console.log('Saving website to database for user:', user.id);
+    
+    // Use any to bypass strict type checking since user_id is newly added
+    const insertData = {
       business_name: website.businessName,
       html_content: website.html,
       category: website.category || 'Sin categoría',
       address: website.address || '',
       phone: website.phone || '',
-    }).select();
+      user_id: user.id,
+    };
+    
+    const { data, error } = await supabase
+      .from('generated_websites')
+      .insert(insertData as any)
+      .select();
 
     if (error) {
       console.error('Error saving website to DB:', error);
