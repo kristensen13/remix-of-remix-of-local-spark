@@ -25,7 +25,13 @@ dist-ssr
 *.suo
 *.ntvs*
 *.njsproj
-*.sln
 *.sw?
 .vercel
 .env*
+
+# .NET backend build output
+backend/**/bin/
+backend/**/obj/
+
+# Subagent-driven-development scratch (ledger, briefs, reports, review packages)
+.superpowers/
