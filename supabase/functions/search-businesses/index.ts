@@ -36,6 +36,21 @@ async function authenticateRequest(req: Request): Promise<{ userId: string } | R
   return { userId: data.claims.sub as string };
 }
 
+interface GooglePlace {
+  place_id: string;
+  name: string;
+  vicinity?: string;
+  types?: string[];
+  geometry?: { location?: { lat: number; lng: number } };
+}
+
+interface GooglePlacesResponse {
+  status: string;
+  results?: GooglePlace[];
+  next_page_token?: string;
+  error_message?: string;
+}
+
 interface Business {
   id: string;
   name: string;
@@ -188,7 +203,7 @@ async function geocodeLocation(query: string, apiKey: string): Promise<{ lat: nu
   return null;
 }
 
-async function searchPlaces(apiKey: string, lat: number, lng: number, type: string, keyword?: string, pageToken?: string): Promise<any> {
+async function searchPlaces(apiKey: string, lat: number, lng: number, type: string, keyword?: string, pageToken?: string): Promise<GooglePlacesResponse> {
   let url = `https://maps.googleapis.com/maps/api/place/nearbysearch/json?location=${lat},${lng}&radius=500&type=${type}&key=${apiKey}`;
   
   if (keyword) {
@@ -203,7 +218,7 @@ async function searchPlaces(apiKey: string, lat: number, lng: number, type: stri
   return response.json();
 }
 
-async function textSearchPlaces(apiKey: string, query: string, location?: { lat: number; lng: number }): Promise<any> {
+async function textSearchPlaces(apiKey: string, query: string, location?: { lat: number; lng: number }): Promise<GooglePlacesResponse> {
   let url = `https://maps.googleapis.com/maps/api/place/textsearch/json?query=${encodeURIComponent(query)}&key=${apiKey}`;
   
   if (location) {
@@ -270,7 +285,7 @@ serve(async (req) => {
 
     console.log('Search center:', center);
 
-    const allPlaces: any[] = [];
+    const allPlaces: GooglePlace[] = [];
     const seenPlaceIds = new Set<string>();
 
     // Determine which types to search based on category

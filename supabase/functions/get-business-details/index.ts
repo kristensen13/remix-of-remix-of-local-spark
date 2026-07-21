@@ -101,7 +101,7 @@ serve(async (req) => {
 
     // Extract postal code from address_components
     const addressComponents = details.address_components || [];
-    const postalCodeComponent = addressComponents.find((c: any) => 
+    const postalCodeComponent = addressComponents.find((c: { types?: string[]; long_name?: string }) =>
       c.types?.includes('postal_code')
     );
     let postalCode = postalCodeComponent?.long_name || '';

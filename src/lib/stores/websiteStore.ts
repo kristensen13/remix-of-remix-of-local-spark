@@ -63,8 +63,7 @@ export async function saveWebsite(website: StoredWebsite): Promise<boolean> {
     }
     
     console.log('Saving website to database for user:', user.id);
-    
-    // Use any to bypass strict type checking since user_id is newly added
+
     const insertData = {
       business_name: website.businessName,
       html_content: website.html,
@@ -73,10 +72,10 @@ export async function saveWebsite(website: StoredWebsite): Promise<boolean> {
       phone: website.phone || '',
       user_id: user.id,
     };
-    
+
     const { data, error } = await supabase
       .from('generated_websites')
-      .insert(insertData as any)
+      .insert(insertData)
       .select();
 
     if (error) {
