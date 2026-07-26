@@ -51,6 +51,8 @@ builder.Services.AddHttpClient<IGoogleMapsService, GoogleMapsService>(client =>
     client.BaseAddress = new Uri("https://places.googleapis.com/");
 });
 
+builder.Services.AddScoped<IClaudeService, ClaudeService>();
+
 var app = builder.Build();
 
 app.UseMiddleware<ExceptionHandlingMiddleware>();
