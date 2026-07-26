@@ -25,10 +25,17 @@ public class AuthController : ControllerBase
     [HttpPost("register")]
     public async Task<ActionResult<AuthResponse>> Register(RegisterRequest request)
     {
-        var inviteCode = await _db.InviteCodes
-            .SingleOrDefaultAsync(c => c.Code == request.InviteCode && !c.IsUsed);
+        // Atomically claim the invite code: the unused -> used transition happens as a single
+        // conditional UPDATE at the database level, so only one of two concurrent requests
+        // racing on the same code can ever affect a row. SingleOrDefaultAsync + a later write
+        // would let both requests pass the read-check before either commits.
+        var claimed = await _db.InviteCodes
+            .Where(c => c.Code == request.InviteCode && !c.IsUsed)
+            .ExecuteUpdateAsync(setters => setters
+                .SetProperty(c => c.IsUsed, true)
+                .SetProperty(c => c.UsedAt, DateTime.UtcNow));
 
-        if (inviteCode is null)
+        if (claimed == 0)
         {
             return BadRequest(new { message = "Invalid or already used invite code." });
         }
@@ -38,13 +45,21 @@ public class AuthController : ControllerBase
 
         if (!result.Succeeded)
         {
+            // The invite code was already claimed above, but the user was never created.
+            // Release the claim so the code isn't permanently burned by a failed registration
+            // (e.g. duplicate email, weak password) — it should remain usable by someone else.
+            await _db.InviteCodes
+                .Where(c => c.Code == request.InviteCode)
+                .ExecuteUpdateAsync(setters => setters
+                    .SetProperty(c => c.IsUsed, false)
+                    .SetProperty(c => c.UsedAt, (DateTime?)null));
+
             return BadRequest(new { message = string.Join("; ", result.Errors.Select(e => e.Description)) });
         }
 
-        inviteCode.IsUsed = true;
-        inviteCode.UsedByUserId = user.Id;
-        inviteCode.UsedAt = DateTime.UtcNow;
-        await _db.SaveChangesAsync();
+        await _db.InviteCodes
+            .Where(c => c.Code == request.InviteCode)
+            .ExecuteUpdateAsync(setters => setters.SetProperty(c => c.UsedByUserId, user.Id));
 
         var token = _tokenService.CreateToken(user);
         return Ok(new AuthResponse(token));

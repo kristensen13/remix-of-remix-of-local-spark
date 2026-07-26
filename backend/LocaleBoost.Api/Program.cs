@@ -15,11 +15,11 @@ builder.Services.AddDbContext<AppDbContext>(options =>
 
 builder.Services.AddIdentityCore<IdentityUser<Guid>>(options =>
     {
-        options.Password.RequiredLength = 6;
+        options.Password.RequiredLength = 8;
         options.Password.RequireNonAlphanumeric = false;
         options.Password.RequireUppercase = false;
         options.Password.RequireLowercase = false;
-        options.Password.RequireDigit = false;
+        options.Password.RequireDigit = true;
     })
     .AddEntityFrameworkStores<AppDbContext>()
     .AddDefaultTokenProviders();
@@ -45,6 +45,13 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
 builder.Services.AddAuthorization();
 
 var app = builder.Build();
+
+const string DevOnlyJwtKeyPlaceholder = "dev-only-placeholder-key-change-me-in-every-real-environment";
+if (app.Environment.IsProduction() && builder.Configuration["Jwt:Key"] == DevOnlyJwtKeyPlaceholder)
+{
+    throw new InvalidOperationException(
+        "Jwt:Key must be overridden via environment variable in Production — refusing to start with the development placeholder.");
+}
 
 app.UseAuthentication();
 app.UseAuthorization();

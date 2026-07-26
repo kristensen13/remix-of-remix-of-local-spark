@@ -74,6 +74,25 @@ public class AuthControllerTests : IClassFixture<CustomWebApplicationFactory>
     }
 
     [Fact]
+    public async Task Register_WithConcurrentRequestsForSameInviteCode_OnlyOneSucceeds()
+    {
+        var code = await SeedInviteCodeAsync();
+        var client1 = _factory.CreateClient();
+        var client2 = _factory.CreateClient();
+
+        var request1 = client1.PostAsJsonAsync("/api/auth/register",
+            new RegisterRequest($"{Guid.NewGuid()}@test.com", "Password1", code));
+        var request2 = client2.PostAsJsonAsync("/api/auth/register",
+            new RegisterRequest($"{Guid.NewGuid()}@test.com", "Password1", code));
+
+        var responses = await Task.WhenAll(request1, request2);
+
+        var statusCodes = responses.Select(r => r.StatusCode).ToList();
+        Assert.Equal(1, statusCodes.Count(s => s == HttpStatusCode.OK));
+        Assert.Equal(1, statusCodes.Count(s => s == HttpStatusCode.BadRequest));
+    }
+
+    [Fact]
     public async Task Login_WithCorrectCredentials_ReturnsToken()
     {
         var code = await SeedInviteCodeAsync();
