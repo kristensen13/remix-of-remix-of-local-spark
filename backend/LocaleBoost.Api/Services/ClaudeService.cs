@@ -17,7 +17,7 @@ public class ClaudeService : IClaudeService
 
     // Testing seam: lets callers (unit tests) inject an AnthropicClient wired to a
     // fake HttpMessageHandler instead of hitting the real Anthropic API.
-    public ClaudeService(AnthropicClient client)
+    internal ClaudeService(AnthropicClient client)
     {
         _client = client;
     }
