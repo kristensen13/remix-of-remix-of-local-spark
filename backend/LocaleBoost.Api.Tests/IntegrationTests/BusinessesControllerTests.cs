@@ -7,6 +7,7 @@ using LocaleBoost.Api.Dtos.Auth;
 using LocaleBoost.Api.Dtos.Businesses;
 using LocaleBoost.Api.Services;
 using Microsoft.AspNetCore.Mvc.Testing;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Xunit;
 
@@ -90,5 +91,18 @@ public class BusinessesControllerTests : IClassFixture<CustomWebApplicationFacto
         var body = await response.Content.ReadFromJsonAsync<BusinessSearchResponse>();
         Assert.Single(body!.Results);
         Assert.Equal("Test Business", body.Results[0].Name);
+
+        // Assert the search and results were actually persisted to the database
+        using (var scope = _factory.Services.CreateScope())
+        {
+            var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+            var persistedSearch = await db.BusinessSearches
+                .Include(s => s.Results)
+                .FirstOrDefaultAsync(s => s.Id == body.SearchId);
+
+            Assert.NotNull(persistedSearch);
+            Assert.Single(persistedSearch.Results);
+            Assert.Equal("Test Business", persistedSearch.Results[0].Name);
+        }
     }
 }
