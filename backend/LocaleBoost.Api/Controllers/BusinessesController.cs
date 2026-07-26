@@ -5,6 +5,7 @@ using LocaleBoost.Api.Dtos.Businesses;
 using LocaleBoost.Api.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 
 namespace LocaleBoost.Api.Controllers;
 
@@ -58,6 +59,40 @@ public class BusinessesController : ControllerBase
 
         return Ok(new BusinessSearchResponse(
             search.Id,
+            search.Results
+                .Select(r => new BusinessSearchResultDto(r.Id, r.PlaceId, r.Name, r.Address, r.Phone))
+                .ToList()));
+    }
+
+    [HttpGet("searches")]
+    public async Task<ActionResult<List<BusinessSearchSummaryDto>>> GetSearches()
+    {
+        var searches = await _db.BusinessSearches
+            .Where(s => s.UserId == CurrentUserId)
+            .OrderByDescending(s => s.CreatedAt)
+            .Select(s => new BusinessSearchSummaryDto(s.Id, s.Query, s.Location, s.CreatedAt, s.Results.Count))
+            .ToListAsync();
+
+        return Ok(searches);
+    }
+
+    [HttpGet("searches/{id:guid}")]
+    public async Task<ActionResult<BusinessSearchDetailDto>> GetSearchById(Guid id)
+    {
+        var search = await _db.BusinessSearches
+            .Include(s => s.Results)
+            .SingleOrDefaultAsync(s => s.Id == id && s.UserId == CurrentUserId);
+
+        if (search is null)
+        {
+            return NotFound();
+        }
+
+        return Ok(new BusinessSearchDetailDto(
+            search.Id,
+            search.Query,
+            search.Location,
+            search.CreatedAt,
             search.Results
                 .Select(r => new BusinessSearchResultDto(r.Id, r.PlaceId, r.Name, r.Address, r.Phone))
                 .ToList()));
