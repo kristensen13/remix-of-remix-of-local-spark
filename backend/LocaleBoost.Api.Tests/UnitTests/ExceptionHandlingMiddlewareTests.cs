@@ -1,0 +1,37 @@
+using System.Net;
+using LocaleBoost.Api.Middleware;
+using Microsoft.AspNetCore.Http;
+using Microsoft.Extensions.FileProviders;
+using Microsoft.Extensions.Hosting;
+using Microsoft.Extensions.Logging.Abstractions;
+using Xunit;
+
+namespace LocaleBoost.Api.Tests.UnitTests;
+
+public class ExceptionHandlingMiddlewareTests
+{
+    private class FakeEnvironment : IHostEnvironment
+    {
+        public string EnvironmentName { get; set; } = "Production";
+        public string ApplicationName { get; set; } = "Test";
+        public string ContentRootPath { get; set; } = ".";
+        public IFileProvider ContentRootFileProvider { get; set; } = null!;
+    }
+
+    [Fact]
+    public async Task InvokeAsync_WhenNextThrows_Returns500ProblemJson()
+    {
+        var context = new DefaultHttpContext();
+        context.Response.Body = new MemoryStream();
+
+        var middleware = new ExceptionHandlingMiddleware(
+            _ => throw new InvalidOperationException("boom"),
+            NullLogger<ExceptionHandlingMiddleware>.Instance,
+            new FakeEnvironment());
+
+        await middleware.InvokeAsync(context);
+
+        Assert.Equal((int)HttpStatusCode.InternalServerError, context.Response.StatusCode);
+        Assert.Equal("application/problem+json", context.Response.ContentType);
+    }
+}

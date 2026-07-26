@@ -1,6 +1,7 @@
 using System.Text;
 using LocaleBoost.Api.Auth;
 using LocaleBoost.Api.Data;
+using LocaleBoost.Api.Middleware;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
@@ -45,6 +46,8 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
 builder.Services.AddAuthorization();
 
 var app = builder.Build();
+
+app.UseMiddleware<ExceptionHandlingMiddleware>();
 
 const string DevOnlyJwtKeyPlaceholder = "dev-only-placeholder-key-change-me-in-every-real-environment";
 if (app.Environment.IsProduction() && builder.Configuration["Jwt:Key"] == DevOnlyJwtKeyPlaceholder)
