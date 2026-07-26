@@ -2,6 +2,7 @@ using System.Text;
 using LocaleBoost.Api.Auth;
 using LocaleBoost.Api.Data;
 using LocaleBoost.Api.Middleware;
+using LocaleBoost.Api.Services;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
@@ -44,6 +45,11 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
     });
 
 builder.Services.AddAuthorization();
+
+builder.Services.AddHttpClient<IGoogleMapsService, GoogleMapsService>(client =>
+{
+    client.BaseAddress = new Uri("https://places.googleapis.com/");
+});
 
 var app = builder.Build();
 
