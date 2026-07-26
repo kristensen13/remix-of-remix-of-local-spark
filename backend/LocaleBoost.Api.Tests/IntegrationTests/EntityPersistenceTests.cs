@@ -1,5 +1,6 @@
 using LocaleBoost.Api.Data;
 using LocaleBoost.Api.Data.Entities;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Xunit;
@@ -22,6 +23,18 @@ public class EntityPersistenceTests : IClassFixture<CustomWebApplicationFactory>
         var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
 
         var userId = Guid.NewGuid();
+
+        // The BusinessSearch/GeneratedWebsite UserId columns now carry a real FK
+        // to AspNetUsers, so a matching user row must exist before we can
+        // reference it.
+        db.Users.Add(new IdentityUser<Guid>
+        {
+            Id = userId,
+            UserName = $"test-{userId}@example.com",
+            NormalizedUserName = $"TEST-{userId}@EXAMPLE.COM",
+            Email = $"test-{userId}@example.com",
+            NormalizedEmail = $"TEST-{userId}@EXAMPLE.COM"
+        });
 
         var search = new BusinessSearch
         {

@@ -29,5 +29,23 @@ public class AppDbContext : IdentityDbContext<IdentityUser<Guid>, IdentityRole<G
             .WithOne()
             .HasForeignKey(r => r.BusinessSearchId)
             .OnDelete(DeleteBehavior.Cascade);
+
+        builder.Entity<InviteCode>()
+            .HasOne<IdentityUser<Guid>>()
+            .WithMany()
+            .HasForeignKey(i => i.UsedByUserId)
+            .OnDelete(DeleteBehavior.SetNull);
+
+        builder.Entity<BusinessSearch>()
+            .HasOne<IdentityUser<Guid>>()
+            .WithMany()
+            .HasForeignKey(s => s.UserId)
+            .OnDelete(DeleteBehavior.Cascade);
+
+        builder.Entity<GeneratedWebsite>()
+            .HasOne<IdentityUser<Guid>>()
+            .WithMany()
+            .HasForeignKey(w => w.UserId)
+            .OnDelete(DeleteBehavior.Cascade);
     }
 }
