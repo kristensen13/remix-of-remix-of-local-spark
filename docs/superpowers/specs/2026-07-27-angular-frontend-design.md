@@ -21,7 +21,7 @@ The repo root currently still holds the old React/Vite/Supabase app (inherited, 
 - **State**: Signals (`signal`/`computed`) in services for app state (search results, search history, generated websites, loading/error flags), read directly in templates. No RxJS `BehaviorSubject`/`async` pipe pattern, except where `HttpClient` itself returns Observables (converted to signals at the service boundary via `toSignal` or manual subscription into a signal).
 - **HTTP**: `HttpClient` configured with `withInterceptors`, functional `AuthInterceptor` attaching the JWT as `Bearer <token>` and redirecting to `/login` on 401.
 - **Routing**: functional `AuthGuard` (`CanActivateFn`).
-- **Testing**: Jasmine/Karma (Angular CLI default), `HttpTestingController` for mocking HTTP calls. No e2e (deferred per the original spec).
+- **Testing**: Vitest (the installed Angular CLI's actual current default — Karma/Jasmine, assumed in the original spec, is no longer the default as of this CLI version), `HttpTestingController` for mocking HTTP calls, `vi.fn()`/`vi.spyOn()` for mocks. No e2e (deferred per the original spec).
 
 ## App structure
 
@@ -62,7 +62,7 @@ Unchanged from the original spec:
 
 ## Testing strategy
 
-Unchanged from the original spec: Jasmine/Karma unit tests for `AuthService`, `AuthInterceptor`, `AuthGuard`, and the three feature components (`BusinessSearchComponent`, `SearchHistoryComponent`, `GeneratedWebsitesComponent`), mocking HTTP calls via `HttpTestingController`. Full e2e remains deferred.
+Vitest unit tests (see Tooling section for why Vitest rather than the originally-assumed Jasmine/Karma) for `AuthService`, `AuthInterceptor`, `AuthGuard`, and the three feature components (`BusinessSearchComponent`, `SearchHistoryComponent`, `GeneratedWebsitesComponent`), mocking HTTP calls via `HttpTestingController`. Full e2e remains deferred.
 
 ## Out of scope (deferred)
 
