@@ -27,8 +27,16 @@ public class GoogleMapsService : IGoogleMapsService
         request.Headers.Add("X-Goog-FieldMask",
             "places.id,places.displayName,places.formattedAddress,places.nationalPhoneNumber,places.websiteUri");
 
-        var response = await _httpClient.SendAsync(request, cancellationToken);
-        response.EnsureSuccessStatusCode();
+        HttpResponseMessage response;
+        try
+        {
+            response = await _httpClient.SendAsync(request, cancellationToken);
+            response.EnsureSuccessStatusCode();
+        }
+        catch (Exception ex) when (ex is HttpRequestException or TaskCanceledException)
+        {
+            throw new ExternalServiceException("Couldn't complete the search, try again.", ex);
+        }
 
         var payload = await response.Content.ReadFromJsonAsync<PlacesSearchResponse>(
             cancellationToken: cancellationToken);

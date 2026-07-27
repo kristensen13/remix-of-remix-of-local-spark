@@ -1,6 +1,7 @@
 using System.Net;
 using System.Text;
 using Anthropic;
+using Anthropic.Exceptions;
 using LocaleBoost.Api.Services;
 using Xunit;
 
@@ -22,6 +23,42 @@ public class ClaudeServiceTests
             };
             return Task.FromResult(response);
         }
+    }
+
+    private class ErrorStatusHandler : HttpMessageHandler
+    {
+        protected override Task<HttpResponseMessage> SendAsync(
+            HttpRequestMessage request, CancellationToken cancellationToken)
+        {
+            var json = "{\"type\": \"error\", \"error\": {\"type\": \"api_error\", \"message\": \"upstream failure\"}}";
+            var response = new HttpResponseMessage(HttpStatusCode.InternalServerError)
+            {
+                Content = new StringContent(json, Encoding.UTF8, "application/json")
+            };
+            return Task.FromResult(response);
+        }
+    }
+
+    [Fact]
+    public async Task GenerateWebsiteHtmlAsync_WhenAnthropicApiFails_WrapsAsExternalServiceException()
+    {
+        var httpClient = new HttpClient(new ErrorStatusHandler())
+        {
+            BaseAddress = new Uri("https://api.anthropic.com/")
+        };
+        var anthropicClient = new AnthropicClient
+        {
+            ApiKey = "test-key",
+            HttpClient = httpClient
+        };
+
+        var service = new ClaudeService(anthropicClient);
+
+        var ex = await Assert.ThrowsAsync<ExternalServiceException>(
+            () => service.GenerateWebsiteHtmlAsync("Test Cafe", "Main St 1", "111"));
+
+        Assert.Equal("Couldn't generate the website, try again.", ex.Message);
+        Assert.IsAssignableFrom<AnthropicException>(ex.InnerException);
     }
 
     [Fact]

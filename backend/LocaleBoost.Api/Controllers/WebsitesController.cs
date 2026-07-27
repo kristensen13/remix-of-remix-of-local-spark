@@ -23,7 +23,7 @@ public class WebsitesController : ControllerBase
         _db = db;
     }
 
-    private Guid CurrentUserId => Guid.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier)!);
+    protected Guid CurrentUserId => Guid.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier)!);
 
     [HttpPost("generate")]
     public async Task<ActionResult<GeneratedWebsiteDto>> Generate(GenerateWebsiteRequest request)

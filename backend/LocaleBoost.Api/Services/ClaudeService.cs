@@ -1,4 +1,5 @@
 using Anthropic;
+using Anthropic.Exceptions;
 using Anthropic.Models.Messages;
 
 namespace LocaleBoost.Api.Services;
@@ -30,16 +31,23 @@ public class ClaudeService : IClaudeService
             $"Name: {businessName}. Address: {address}. Phone: {phone ?? "not provided"}. " +
             "Return only the HTML, no explanation.";
 
-        var response = await _client.Messages.Create(new MessageCreateParams
+        try
         {
-            Model = Model.ClaudeOpus4_8,
-            MaxTokens = 8192,
-            Messages = [new() { Role = Role.User, Content = prompt }],
-        }, cancellationToken);
+            var response = await _client.Messages.Create(new MessageCreateParams
+            {
+                Model = Model.ClaudeOpus4_8,
+                MaxTokens = 8192,
+                Messages = [new() { Role = Role.User, Content = prompt }],
+            }, cancellationToken);
 
-        return response.Content
-            .Select(b => b.Value)
-            .OfType<TextBlock>()
-            .FirstOrDefault()?.Text ?? string.Empty;
+            return response.Content
+                .Select(b => b.Value)
+                .OfType<TextBlock>()
+                .FirstOrDefault()?.Text ?? string.Empty;
+        }
+        catch (AnthropicException ex)
+        {
+            throw new ExternalServiceException("Couldn't generate the website, try again.", ex);
+        }
     }
 }

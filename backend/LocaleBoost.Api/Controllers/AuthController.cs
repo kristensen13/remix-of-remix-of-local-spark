@@ -54,7 +54,7 @@ public class AuthController : ControllerBase
                     .SetProperty(c => c.IsUsed, false)
                     .SetProperty(c => c.UsedAt, (DateTime?)null));
 
-            return BadRequest(new { message = string.Join("; ", result.Errors.Select(e => e.Description)) });
+            return BadRequest(new { message = "Registration failed. Please check your details and try again." });
         }
 
         await _db.InviteCodes

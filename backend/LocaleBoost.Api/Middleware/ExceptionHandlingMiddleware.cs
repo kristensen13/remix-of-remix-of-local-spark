@@ -1,5 +1,6 @@
 using System.Net;
 using System.Text.Json;
+using LocaleBoost.Api.Services;
 
 namespace LocaleBoost.Api.Middleware;
 
@@ -24,6 +25,22 @@ public class ExceptionHandlingMiddleware
         try
         {
             await _next(context);
+        }
+        catch (ExternalServiceException ex)
+        {
+            _logger.LogError(ex, "External service call failed");
+
+            context.Response.ContentType = "application/problem+json";
+            context.Response.StatusCode = (int)HttpStatusCode.BadGateway;
+
+            var problem = new
+            {
+                title = ex.Message,
+                status = (int)HttpStatusCode.BadGateway,
+                detail = _environment.IsDevelopment() ? ex.ToString() : null
+            };
+
+            await context.Response.WriteAsync(JsonSerializer.Serialize(problem));
         }
         catch (Exception ex)
         {

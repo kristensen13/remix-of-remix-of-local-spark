@@ -12,6 +12,9 @@ var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddControllers();
 
+builder.Services.AddEndpointsApiExplorer();
+builder.Services.AddSwaggerGen();
+
 builder.Services.AddDbContext<AppDbContext>(options =>
     options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection")));
 
@@ -58,10 +61,27 @@ var app = builder.Build();
 app.UseMiddleware<ExceptionHandlingMiddleware>();
 
 const string DevOnlyJwtKeyPlaceholder = "dev-only-placeholder-key-change-me-in-every-real-environment";
-if (app.Environment.IsProduction() && builder.Configuration["Jwt:Key"] == DevOnlyJwtKeyPlaceholder)
+if (app.Environment.IsProduction())
 {
-    throw new InvalidOperationException(
-        "Jwt:Key must be overridden via environment variable in Production — refusing to start with the development placeholder.");
+    var jwtKey = builder.Configuration["Jwt:Key"];
+
+    if (jwtKey == DevOnlyJwtKeyPlaceholder)
+    {
+        throw new InvalidOperationException(
+            "Jwt:Key must be overridden via environment variable in Production — refusing to start with the development placeholder.");
+    }
+
+    if (Encoding.UTF8.GetByteCount(jwtKey ?? string.Empty) < 32)
+    {
+        throw new InvalidOperationException(
+            "Jwt:Key must be at least 256 bits (32 UTF-8 bytes) for HS256 in Production — refusing to start with a weak key.");
+    }
+}
+
+if (app.Environment.IsDevelopment())
+{
+    app.UseSwagger();
+    app.UseSwaggerUI();
 }
 
 app.UseAuthentication();
