@@ -62,4 +62,17 @@ public class WebsitesController : ControllerBase
             website.Id, website.BusinessName, website.BusinessAddress,
             website.BusinessPhone, website.GeneratedContent, website.CreatedAt));
     }
+
+    [HttpGet]
+    public async Task<ActionResult<List<GeneratedWebsiteDto>>> GetAll()
+    {
+        var websites = await _db.GeneratedWebsites
+            .Where(w => w.UserId == CurrentUserId)
+            .OrderByDescending(w => w.CreatedAt)
+            .Select(w => new GeneratedWebsiteDto(
+                w.Id, w.BusinessName, w.BusinessAddress, w.BusinessPhone, w.GeneratedContent, w.CreatedAt))
+            .ToListAsync();
+
+        return Ok(websites);
+    }
 }

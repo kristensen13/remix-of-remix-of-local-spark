@@ -97,4 +97,25 @@ public class WebsitesControllerTests : IClassFixture<CustomWebApplicationFactory
 
         Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);
     }
+
+    [Fact]
+    public async Task GetAll_OnlyReturnsOwnGeneratedWebsites()
+    {
+        var clientA = await CreateAuthenticatedClientAsync();
+        var clientB = await CreateAuthenticatedClientAsync();
+
+        var searchResponse = await clientA.GetAsync("/api/businesses/search?query=cafes");
+        var search = await searchResponse.Content.ReadFromJsonAsync<BusinessSearchResponse>();
+        await clientA.PostAsJsonAsync("/api/websites/generate",
+            new GenerateWebsiteRequest(search!.Results[0].Id));
+
+        var responseA = await clientA.GetAsync("/api/websites");
+        var responseB = await clientB.GetAsync("/api/websites");
+
+        var websitesA = await responseA.Content.ReadFromJsonAsync<List<GeneratedWebsiteDto>>();
+        var websitesB = await responseB.Content.ReadFromJsonAsync<List<GeneratedWebsiteDto>>();
+
+        Assert.Single(websitesA!);
+        Assert.Empty(websitesB!);
+    }
 }
