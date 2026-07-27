@@ -1,5 +1,5 @@
 import { TestBed } from '@angular/core/testing';
-import { HttpClient, provideHttpClient, withInterceptors } from '@angular/common/http';
+import { HttpClient, HttpErrorResponse, provideHttpClient, withInterceptors } from '@angular/common/http';
 import { HttpTestingController, provideHttpClientTesting } from '@angular/common/http/testing';
 import { AuthService } from './auth.service';
 import { authInterceptor } from './auth-interceptor';
@@ -48,23 +48,35 @@ describe('authInterceptor', () => {
 
   it('calls AuthService.logout() on a 401 response', () => {
     authServiceStub.token.mockReturnValue('expired-token');
+    let capturedError: HttpErrorResponse | undefined;
 
-    httpClient.get('/api/websites').subscribe({ error: () => {} });
+    httpClient.get('/api/websites').subscribe({
+      error: (err: HttpErrorResponse) => {
+        capturedError = err;
+      },
+    });
 
     const req = httpMock.expectOne('/api/websites');
     req.flush({ message: 'Unauthorized' }, { status: 401, statusText: 'Unauthorized' });
 
     expect(authServiceStub.logout).toHaveBeenCalled();
+    expect(capturedError?.status).toBe(401);
   });
 
   it('does not call logout() on a non-401 error', () => {
     authServiceStub.token.mockReturnValue('valid-token');
+    let capturedError: HttpErrorResponse | undefined;
 
-    httpClient.get('/api/websites').subscribe({ error: () => {} });
+    httpClient.get('/api/websites').subscribe({
+      error: (err: HttpErrorResponse) => {
+        capturedError = err;
+      },
+    });
 
     const req = httpMock.expectOne('/api/websites');
     req.flush({ title: 'Bad gateway' }, { status: 502, statusText: 'Bad Gateway' });
 
     expect(authServiceStub.logout).not.toHaveBeenCalled();
+    expect(capturedError?.status).toBe(502);
   });
 });
