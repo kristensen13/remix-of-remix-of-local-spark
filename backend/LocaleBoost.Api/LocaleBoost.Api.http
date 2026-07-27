@@ -1,0 +1,6 @@
+@LocaleBoost.Api_HostAddress = http://localhost:5091
+
+GET {{LocaleBoost.Api_HostAddress}}/health
+Accept: application/json
+
+###
