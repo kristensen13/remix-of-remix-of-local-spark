@@ -59,4 +59,20 @@ describe('GeneratedWebsites', () => {
     component.closePreview();
     expect(component.previewing()).toBeNull();
   });
+
+  it('previewSrcdoc() is null when nothing is being previewed', () => {
+    expect(component.previewSrcdoc()).toBeNull();
+  });
+
+  it('previewSrcdoc() is a non-null SafeHtml value once previewing a website', () => {
+    component.preview(sampleWebsite);
+    expect(component.previewSrcdoc()).not.toBeNull();
+  });
+
+  it('previewSrcdoc() resets to null after closePreview()', () => {
+    component.preview(sampleWebsite);
+    expect(component.previewSrcdoc()).not.toBeNull();
+    component.closePreview();
+    expect(component.previewSrcdoc()).toBeNull();
+  });
 });
