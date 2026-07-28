@@ -1,0 +1,12 @@
+export interface GenerateWebsiteRequest {
+  businessSearchResultId: string;
+}
+
+export interface GeneratedWebsite {
+  id: string;
+  businessName: string;
+  businessAddress: string;
+  businessPhone: string | null;
+  generatedContent: string;
+  createdAt: string;
+}

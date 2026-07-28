@@ -40,10 +40,22 @@
           @if (result.phone) {
             <p class="text-sm text-slate-600">{{ result.phone }}</p>
           }
+          <button
+            type="button"
+            [disabled]="generatingResultId() === result.id"
+            class="mt-2 rounded bg-slate-900 px-3 py-1 text-sm text-white disabled:opacity-50"
+            (click)="onGenerate(result)"
+          >
+            {{ generatingResultId() === result.id ? 'Generating…' : 'Generate website' }}
+          </button>
         </li>
       }
     </ul>
   } @else if (!isLoading()) {
     <p class="text-sm text-slate-500">No results yet — run a search above.</p>
+  }
+
+  @if (generateError()) {
+    <p class="mt-4 rounded bg-red-50 px-3 py-2 text-sm text-red-700">{{ generateError() }}</p>
   }
 </div>
