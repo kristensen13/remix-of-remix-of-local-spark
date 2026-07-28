@@ -1,0 +1,49 @@
+<div class="mx-auto max-w-3xl p-6">
+  <h1 class="mb-4 text-xl font-semibold">Search for businesses without a website</h1>
+
+  <form (ngSubmit)="onSubmit()" class="mb-6 flex flex-wrap gap-3">
+    <input
+      [ngModel]="query()"
+      (ngModelChange)="query.set($event)"
+      name="query"
+      type="text"
+      placeholder="e.g. plumbers"
+      class="flex-1 rounded border border-slate-300 px-3 py-2"
+    />
+    <input
+      [ngModel]="location()"
+      (ngModelChange)="location.set($event)"
+      name="location"
+      type="text"
+      placeholder="Location (optional)"
+      class="flex-1 rounded border border-slate-300 px-3 py-2"
+    />
+    <button
+      type="submit"
+      [disabled]="isLoading()"
+      class="rounded bg-slate-900 px-4 py-2 text-white disabled:opacity-50"
+    >
+      {{ isLoading() ? 'Searching…' : 'Search' }}
+    </button>
+  </form>
+
+  @if (errorMessage()) {
+    <p class="mb-4 rounded bg-red-50 px-3 py-2 text-sm text-red-700">{{ errorMessage() }}</p>
+  }
+
+  @if (results().length > 0) {
+    <ul class="flex flex-col gap-3">
+      @for (result of results(); track result.id) {
+        <li class="rounded border border-slate-200 p-4">
+          <p class="font-medium">{{ result.name }}</p>
+          <p class="text-sm text-slate-600">{{ result.address }}</p>
+          @if (result.phone) {
+            <p class="text-sm text-slate-600">{{ result.phone }}</p>
+          }
+        </li>
+      }
+    </ul>
+  } @else if (!isLoading()) {
+    <p class="text-sm text-slate-500">No results yet — run a search above.</p>
+  }
+</div>
