@@ -33,5 +33,9 @@ dist-ssr
 backend/**/bin/
 backend/**/obj/
 
+# Angular build output copied into wwwroot at Docker build time — never committed
+backend/LocaleBoost.Api/wwwroot/*
+!backend/LocaleBoost.Api/wwwroot/.gitkeep
+
 # Subagent-driven-development scratch (ledger, briefs, reports, review packages)
 .superpowers/
