@@ -1,0 +1,82 @@
+<div class="flex min-h-screen items-center justify-center bg-slate-100 px-4">
+  <div class="w-full max-w-sm rounded-lg bg-white p-8 shadow">
+    <div class="mb-6 flex gap-2">
+      <button
+        type="button"
+        class="flex-1 rounded px-3 py-2 text-sm font-medium"
+        [class.bg-slate-900]="mode() === 'login'"
+        [class.text-white]="mode() === 'login'"
+        [class.bg-slate-100]="mode() !== 'login'"
+        (click)="setMode('login')"
+      >
+        Log in
+      </button>
+      <button
+        type="button"
+        class="flex-1 rounded px-3 py-2 text-sm font-medium"
+        [class.bg-slate-900]="mode() === 'register'"
+        [class.text-white]="mode() === 'register'"
+        [class.bg-slate-100]="mode() !== 'register'"
+        (click)="setMode('register')"
+      >
+        Register
+      </button>
+    </div>
+
+    @if (errorMessage()) {
+      <p class="mb-4 rounded bg-red-50 px-3 py-2 text-sm text-red-700">{{ errorMessage() }}</p>
+    }
+
+    @if (mode() === 'login') {
+      <form [formGroup]="loginForm" (ngSubmit)="submitLogin()" class="flex flex-col gap-4">
+        <input
+          formControlName="email"
+          type="email"
+          placeholder="Email"
+          class="rounded border border-slate-300 px-3 py-2"
+        />
+        <input
+          formControlName="password"
+          type="password"
+          placeholder="Password"
+          class="rounded border border-slate-300 px-3 py-2"
+        />
+        <button
+          type="submit"
+          [disabled]="loginForm.invalid || isSubmitting()"
+          class="rounded bg-slate-900 px-3 py-2 text-white disabled:opacity-50"
+        >
+          {{ isSubmitting() ? 'Logging in…' : 'Log in' }}
+        </button>
+      </form>
+    } @else {
+      <form [formGroup]="registerForm" (ngSubmit)="submitRegister()" class="flex flex-col gap-4">
+        <input
+          formControlName="email"
+          type="email"
+          placeholder="Email"
+          class="rounded border border-slate-300 px-3 py-2"
+        />
+        <input
+          formControlName="password"
+          type="password"
+          placeholder="Password (min 8 characters)"
+          class="rounded border border-slate-300 px-3 py-2"
+        />
+        <input
+          formControlName="inviteCode"
+          type="text"
+          placeholder="Invite code"
+          class="rounded border border-slate-300 px-3 py-2"
+        />
+        <button
+          type="submit"
+          [disabled]="registerForm.invalid || isSubmitting()"
+          class="rounded bg-slate-900 px-3 py-2 text-white disabled:opacity-50"
+        >
+          {{ isSubmitting() ? 'Registering…' : 'Register' }}
+        </button>
+      </form>
+    }
+  </div>
+</div>
