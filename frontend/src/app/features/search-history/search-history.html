@@ -1,0 +1,45 @@
+<div class="mx-auto max-w-3xl p-6">
+  <h1 class="mb-4 text-xl font-semibold">Past searches</h1>
+
+  @if (errorMessage()) {
+    <p class="mb-4 rounded bg-red-50 px-3 py-2 text-sm text-red-700">{{ errorMessage() }}</p>
+  }
+
+  @if (isLoading()) {
+    <p class="text-sm text-slate-500">Loading…</p>
+  } @else if (searches().length === 0) {
+    <p class="text-sm text-slate-500">No searches yet.</p>
+  } @else {
+    <ul class="flex flex-col gap-3">
+      @for (search of searches(); track search.id) {
+        <li class="rounded border border-slate-200 p-4">
+          <button
+            type="button"
+            class="text-left font-medium underline-offset-2 hover:underline"
+            (click)="viewDetail(search.id)"
+          >
+            {{ search.query }}@if (search.location) {, {{ search.location }}}
+          </button>
+          <p class="text-sm text-slate-600">
+            {{ search.resultCount }} result(s) — {{ search.createdAt | date: 'medium' }}
+          </p>
+        </li>
+      }
+    </ul>
+  }
+
+  @if (detailError()) {
+    <p class="mt-4 rounded bg-red-50 px-3 py-2 text-sm text-red-700">{{ detailError() }}</p>
+  }
+
+  @if (selectedDetail(); as detail) {
+    <div class="mt-6 rounded border border-slate-200 p-4">
+      <h2 class="mb-2 font-medium">{{ detail.query }}</h2>
+      <ul class="flex flex-col gap-2">
+        @for (result of detail.results; track result.id) {
+          <li class="text-sm text-slate-600">{{ result.name }} — {{ result.address }}</li>
+        }
+      </ul>
+    </div>
+  }
+</div>
