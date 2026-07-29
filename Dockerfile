@@ -21,7 +21,6 @@ COPY --from=backend-build /app/publish ./
 COPY --from=frontend-build /src/frontend/dist/frontend/browser ./wwwroot
 
 ENV ASPNETCORE_ENVIRONMENT=Production
-ENV ASPNETCORE_URLS=http://+:8080
 EXPOSE 8080
 
-ENTRYPOINT ["dotnet", "LocaleBoost.Api.dll"]
+ENTRYPOINT ["/bin/sh", "-c", "exec dotnet LocaleBoost.Api.dll --urls http://+:${PORT:-8080}"]
