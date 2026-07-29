@@ -69,5 +69,23 @@ public class StaticFileFallbackTests : IClassFixture<CustomWebApplicationFactory
         Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);
     }
 
+    [Fact]
+    public async Task ExistingStaticFile_IsServedDirectly_NotShadowedByFallback()
+    {
+        var webRoot = Directory.CreateTempSubdirectory().FullName;
+        await File.WriteAllTextAsync(Path.Combine(webRoot, "index.html"), "<html><body>spa-shell</body></html>");
+        var jsContent = "console.log('real bundle');";
+        await File.WriteAllTextAsync(Path.Combine(webRoot, "main-abc123.js"), jsContent);
+
+        var client = CreateClientWithFakeWebRoot(webRoot);
+
+        var response = await client.GetAsync("/main-abc123.js");
+
+        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+        var body = await response.Content.ReadAsStringAsync();
+        Assert.Equal(jsContent, body);
+        Assert.StartsWith("text/javascript", response.Content.Headers.ContentType?.MediaType ?? "");
+    }
+
     private record HealthResponse(string Status);
 }
