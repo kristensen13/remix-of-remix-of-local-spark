@@ -9,7 +9,7 @@
         [class.bg-slate-100]="mode() !== 'login'"
         (click)="setMode('login')"
       >
-        Log in
+        Iniciar sesión
       </button>
       <button
         type="button"
@@ -19,7 +19,7 @@
         [class.bg-slate-100]="mode() !== 'register'"
         (click)="setMode('register')"
       >
-        Register
+        Registrarse
       </button>
     </div>
 
@@ -32,13 +32,13 @@
         <input
           formControlName="email"
           type="email"
-          placeholder="Email"
+          placeholder="Correo electrónico"
           class="rounded border border-slate-300 px-3 py-2"
         />
         <input
           formControlName="password"
           type="password"
-          placeholder="Password"
+          placeholder="Contraseña"
           class="rounded border border-slate-300 px-3 py-2"
         />
         <button
@@ -46,7 +46,7 @@
           [disabled]="loginForm.invalid || isSubmitting()"
           class="rounded bg-slate-900 px-3 py-2 text-white disabled:opacity-50"
         >
-          {{ isSubmitting() ? 'Logging in…' : 'Log in' }}
+          {{ isSubmitting() ? 'Iniciando sesión…' : 'Iniciar sesión' }}
         </button>
       </form>
     } @else {
@@ -54,19 +54,19 @@
         <input
           formControlName="email"
           type="email"
-          placeholder="Email"
+          placeholder="Correo electrónico"
           class="rounded border border-slate-300 px-3 py-2"
         />
         <input
           formControlName="password"
           type="password"
-          placeholder="Password (min 8 characters)"
+          placeholder="Contraseña (mín. 8 caracteres)"
           class="rounded border border-slate-300 px-3 py-2"
         />
         <input
           formControlName="inviteCode"
           type="text"
-          placeholder="Invite code"
+          placeholder="Código de invitación"
           class="rounded border border-slate-300 px-3 py-2"
         />
         <button
@@ -74,7 +74,7 @@
           [disabled]="registerForm.invalid || isSubmitting()"
           class="rounded bg-slate-900 px-3 py-2 text-white disabled:opacity-50"
         >
-          {{ isSubmitting() ? 'Registering…' : 'Register' }}
+          {{ isSubmitting() ? 'Registrando…' : 'Registrarse' }}
         </button>
       </form>
     }

@@ -57,7 +57,7 @@ public class ClaudeServiceTests
         var ex = await Assert.ThrowsAsync<ExternalServiceException>(
             () => service.GenerateWebsiteHtmlAsync("Test Cafe", "Main St 1", "111"));
 
-        Assert.Equal("Couldn't generate the website, try again.", ex.Message);
+        Assert.Equal("No se pudo generar el sitio web, intentá de nuevo.", ex.Message);
         Assert.IsAssignableFrom<AnthropicException>(ex.InnerException);
     }
 

@@ -13,5 +13,5 @@ export function extractErrorMessage(error: HttpErrorResponse): string {
     }
   }
 
-  return 'An unexpected error occurred. Please try again.';
+  return 'Ocurrió un error inesperado. Intentá de nuevo.';
 }

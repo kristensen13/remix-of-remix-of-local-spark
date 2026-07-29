@@ -27,9 +27,9 @@ public class ClaudeService : IClaudeService
         string businessName, string address, string? phone, CancellationToken cancellationToken = default)
     {
         var prompt =
-            $"Generate a single self-contained HTML file for a simple landing page for this local business: " +
-            $"Name: {businessName}. Address: {address}. Phone: {phone ?? "not provided"}. " +
-            "Return only the HTML, no explanation.";
+            $"Generá un único archivo HTML autocontenido para una landing page simple de este negocio local, " +
+            $"en castellano: Nombre: {businessName}. Dirección: {address}. Teléfono: {phone ?? "no disponible"}. " +
+            "Respondé únicamente con el HTML, sin explicaciones.";
 
         try
         {
@@ -47,7 +47,7 @@ public class ClaudeService : IClaudeService
         }
         catch (AnthropicException ex)
         {
-            throw new ExternalServiceException("Couldn't generate the website, try again.", ex);
+            throw new ExternalServiceException("No se pudo generar el sitio web, intentá de nuevo.", ex);
         }
     }
 }

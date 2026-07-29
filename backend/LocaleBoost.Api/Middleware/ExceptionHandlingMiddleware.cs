@@ -51,7 +51,7 @@ public class ExceptionHandlingMiddleware
 
             var problem = new
             {
-                title = "An unexpected error occurred.",
+                title = "Ocurrió un error inesperado.",
                 status = 500,
                 detail = _environment.IsDevelopment() ? ex.ToString() : null
             };

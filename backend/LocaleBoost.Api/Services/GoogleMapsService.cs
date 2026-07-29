@@ -35,7 +35,7 @@ public class GoogleMapsService : IGoogleMapsService
         }
         catch (Exception ex) when (ex is HttpRequestException or TaskCanceledException)
         {
-            throw new ExternalServiceException("Couldn't complete the search, try again.", ex);
+            throw new ExternalServiceException("No se pudo completar la búsqueda, intentá de nuevo.", ex);
         }
 
         var payload = await response.Content.ReadFromJsonAsync<PlacesSearchResponse>(

@@ -1,14 +1,14 @@
 <div class="mx-auto max-w-3xl p-6">
-  <h1 class="mb-4 text-xl font-semibold">Generated websites</h1>
+  <h1 class="mb-4 text-xl font-semibold">Sitios generados</h1>
 
   @if (errorMessage()) {
     <p class="mb-4 rounded bg-red-50 px-3 py-2 text-sm text-red-700">{{ errorMessage() }}</p>
   }
 
   @if (isLoading()) {
-    <p class="text-sm text-slate-500">Loading…</p>
+    <p class="text-sm text-slate-500">Cargando…</p>
   } @else if (websites().length === 0) {
-    <p class="text-sm text-slate-500">No generated websites yet.</p>
+    <p class="text-sm text-slate-500">Todavía no hay sitios generados.</p>
   } @else {
     <ul class="flex flex-col gap-3">
       @for (website of websites(); track website.id) {
@@ -21,7 +21,7 @@
             class="mt-2 rounded bg-slate-900 px-3 py-1 text-sm text-white"
             (click)="preview(website)"
           >
-            Preview
+            Vista previa
           </button>
         </li>
       }
@@ -34,7 +34,7 @@
         <div class="mb-2 flex items-center justify-between">
           <h2 class="font-medium">{{ website.businessName }}</h2>
           <button type="button" class="text-sm text-slate-600 underline" (click)="closePreview()">
-            Close
+            Cerrar
           </button>
         </div>
         <iframe [srcdoc]="previewSrcdoc()" sandbox class="w-full flex-1 rounded border"></iframe>

@@ -37,7 +37,7 @@ public class AuthController : ControllerBase
 
         if (claimed == 0)
         {
-            return BadRequest(new { message = "Invalid or already used invite code." });
+            return BadRequest(new { message = "El código de invitación no es válido o ya fue usado." });
         }
 
         var user = new IdentityUser<Guid> { Id = Guid.NewGuid(), UserName = request.Email, Email = request.Email };
@@ -54,7 +54,7 @@ public class AuthController : ControllerBase
                     .SetProperty(c => c.IsUsed, false)
                     .SetProperty(c => c.UsedAt, (DateTime?)null));
 
-            return BadRequest(new { message = "Registration failed. Please check your details and try again." });
+            return BadRequest(new { message = "No se pudo completar el registro. Revisá tus datos e intentá de nuevo." });
         }
 
         await _db.InviteCodes
@@ -71,7 +71,7 @@ public class AuthController : ControllerBase
         var user = await _userManager.FindByEmailAsync(request.Email);
         if (user is null || !await _userManager.CheckPasswordAsync(user, request.Password))
         {
-            return Unauthorized(new { message = "Invalid email or password." });
+            return Unauthorized(new { message = "Correo electrónico o contraseña incorrectos." });
         }
 
         var token = _tokenService.CreateToken(user);

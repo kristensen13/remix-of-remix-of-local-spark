@@ -1,14 +1,14 @@
 <div class="mx-auto max-w-3xl p-6">
-  <h1 class="mb-4 text-xl font-semibold">Past searches</h1>
+  <h1 class="mb-4 text-xl font-semibold">Búsquedas anteriores</h1>
 
   @if (errorMessage()) {
     <p class="mb-4 rounded bg-red-50 px-3 py-2 text-sm text-red-700">{{ errorMessage() }}</p>
   }
 
   @if (isLoading()) {
-    <p class="text-sm text-slate-500">Loading…</p>
+    <p class="text-sm text-slate-500">Cargando…</p>
   } @else if (searches().length === 0) {
-    <p class="text-sm text-slate-500">No searches yet.</p>
+    <p class="text-sm text-slate-500">Todavía no hay búsquedas.</p>
   } @else {
     <ul class="flex flex-col gap-3">
       @for (search of searches(); track search.id) {
@@ -21,7 +21,7 @@
             {{ search.query }}@if (search.location) {, {{ search.location }}}
           </button>
           <p class="text-sm text-slate-600">
-            {{ search.resultCount }} result(s) — {{ search.createdAt | date: 'medium' }}
+            {{ search.resultCount }} resultado(s) — {{ search.createdAt | date: 'medium' }}
           </p>
         </li>
       }

@@ -46,7 +46,7 @@ public class ExceptionHandlingMiddlewareTests
 
         var middleware = new ExceptionHandlingMiddleware(
             _ => throw new ExternalServiceException(
-                "Couldn't complete the search, try again.", new HttpRequestException("boom")),
+                "No se pudo completar la búsqueda, intentá de nuevo.", new HttpRequestException("boom")),
             NullLogger<ExceptionHandlingMiddleware>.Instance,
             new FakeEnvironment());
 
@@ -59,7 +59,7 @@ public class ExceptionHandlingMiddlewareTests
         using var reader = new StreamReader(context.Response.Body);
         var body = await reader.ReadToEndAsync();
         using var doc = JsonDocument.Parse(body);
-        Assert.Equal("Couldn't complete the search, try again.", doc.RootElement.GetProperty("title").GetString());
+        Assert.Equal("No se pudo completar la búsqueda, intentá de nuevo.", doc.RootElement.GetProperty("title").GetString());
         Assert.Equal(502, doc.RootElement.GetProperty("status").GetInt32());
     }
 }

@@ -56,7 +56,7 @@ describe('SearchHistory', () => {
 
     await component.viewDetail('s1');
 
-    expect(component.detailError()).toBe('Could not load this search.');
+    expect(component.detailError()).toBe('No se pudo cargar esta búsqueda.');
     expect(component.selectedDetail()).toBeNull();
   });
 });

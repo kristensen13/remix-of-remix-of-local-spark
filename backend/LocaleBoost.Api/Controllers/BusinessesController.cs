@@ -31,7 +31,7 @@ public class BusinessesController : ControllerBase
     {
         if (string.IsNullOrWhiteSpace(query))
         {
-            return BadRequest(new { message = "Query is required." });
+            return BadRequest(new { message = "El término de búsqueda es obligatorio." });
         }
 
         var places = await _googleMaps.SearchBusinessesWithoutWebsiteAsync(query, location);

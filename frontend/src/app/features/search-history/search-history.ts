@@ -29,7 +29,7 @@ export class SearchHistory implements OnInit {
       const detail = await this.historyService.getSearchDetail(id);
       this.selectedDetail.set(detail);
     } catch {
-      this.detailError.set('Could not load this search.');
+      this.detailError.set('No se pudo cargar esta búsqueda.');
       this.selectedDetail.set(null);
     }
   }

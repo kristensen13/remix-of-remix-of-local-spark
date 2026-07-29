@@ -62,7 +62,7 @@ public class GoogleMapsServiceTests
         var ex = await Assert.ThrowsAsync<ExternalServiceException>(
             () => service.SearchBusinessesWithoutWebsiteAsync("cafes", "Madrid"));
 
-        Assert.Equal("Couldn't complete the search, try again.", ex.Message);
+        Assert.Equal("No se pudo completar la búsqueda, intentá de nuevo.", ex.Message);
         Assert.IsType<HttpRequestException>(ex.InnerException);
     }
 
@@ -82,7 +82,7 @@ public class GoogleMapsServiceTests
         var ex = await Assert.ThrowsAsync<ExternalServiceException>(
             () => service.SearchBusinessesWithoutWebsiteAsync("cafes", "Madrid"));
 
-        Assert.Equal("Couldn't complete the search, try again.", ex.Message);
+        Assert.Equal("No se pudo completar la búsqueda, intentá de nuevo.", ex.Message);
         Assert.IsType<HttpRequestException>(ex.InnerException);
     }
 
