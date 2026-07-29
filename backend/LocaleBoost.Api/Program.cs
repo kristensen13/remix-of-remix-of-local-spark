@@ -58,14 +58,6 @@ builder.Services.AddScoped<IClaudeService, ClaudeService>();
 
 var app = builder.Build();
 
-using (var scope = app.Services.CreateScope())
-{
-    var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
-    await db.Database.MigrateAsync();
-}
-
-app.UseMiddleware<ExceptionHandlingMiddleware>();
-
 const string DevOnlyJwtKeyPlaceholder = "dev-only-placeholder-key-change-me-in-every-real-environment";
 if (app.Environment.IsProduction())
 {
@@ -83,6 +75,14 @@ if (app.Environment.IsProduction())
             "Jwt:Key must be at least 256 bits (32 UTF-8 bytes) for HS256 in Production — refusing to start with a weak key.");
     }
 }
+
+using (var scope = app.Services.CreateScope())
+{
+    var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+    await db.Database.MigrateAsync();
+}
+
+app.UseMiddleware<ExceptionHandlingMiddleware>();
 
 if (app.Environment.IsDevelopment())
 {
