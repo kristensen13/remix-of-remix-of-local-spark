@@ -20,6 +20,8 @@ describe('GeneratedWebsites', () => {
     businessAddress: '1 Main St',
     businessPhone: null,
     generatedContent: '<html><body>Hi</body></html>',
+    auditSummary: null,
+    sourceWebsiteUrl: null,
     createdAt: '2026-01-01T00:00:00Z',
   };
 

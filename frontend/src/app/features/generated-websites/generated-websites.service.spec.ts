@@ -29,6 +29,8 @@ describe('GeneratedWebsitesService', () => {
         businessAddress: '1 Main St',
         businessPhone: null,
         generatedContent: '<html></html>',
+        auditSummary: null,
+        sourceWebsiteUrl: null,
         createdAt: '2026-01-01T00:00:00Z',
       },
     ]);
@@ -51,6 +53,8 @@ describe('GeneratedWebsitesService', () => {
       businessAddress: '2 Side St',
       businessPhone: null,
       generatedContent: '<html></html>',
+      auditSummary: null,
+      sourceWebsiteUrl: null,
       createdAt: '2026-01-02T00:00:00Z',
     });
 

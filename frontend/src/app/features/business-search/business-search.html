@@ -64,7 +64,11 @@
             class="mt-2 rounded bg-slate-900 px-3 py-1 text-sm text-white disabled:opacity-50"
             (click)="onGenerate(result)"
           >
-            {{ generatingResultId() === result.id ? 'Generando…' : 'Generar sitio web' }}
+            @if (generatingResultId() === result.id) {
+              {{ result.hasWebsite ? 'Auditando…' : 'Generando…' }}
+            } @else {
+              {{ result.hasWebsite ? 'Auditar y mejorar' : 'Generar sitio web' }}
+            }
           </button>
         </li>
       }

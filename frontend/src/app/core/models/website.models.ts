@@ -8,5 +8,7 @@ export interface GeneratedWebsite {
   businessAddress: string;
   businessPhone: string | null;
   generatedContent: string;
+  auditSummary: string | null;
+  sourceWebsiteUrl: string | null;
   createdAt: string;
 }
