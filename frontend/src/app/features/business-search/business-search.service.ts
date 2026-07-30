@@ -12,13 +12,16 @@ export class BusinessSearchService {
   readonly isLoading = signal(false);
   readonly errorMessage = signal<string | null>(null);
 
-  async search(query: string, location: string | null): Promise<void> {
+  async search(query: string, location: string | null, includeWithWebsite: boolean): Promise<void> {
     this.isLoading.set(true);
     this.errorMessage.set(null);
 
     let params = new HttpParams().set('query', query);
     if (location) {
       params = params.set('location', location);
+    }
+    if (includeWithWebsite) {
+      params = params.set('includeWithWebsite', 'true');
     }
 
     try {

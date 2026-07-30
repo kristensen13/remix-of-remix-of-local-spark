@@ -4,6 +4,8 @@ export interface BusinessSearchResult {
   name: string;
   address: string;
   phone: string | null;
+  hasWebsite: boolean;
+  websiteUrl: string | null;
 }
 
 export interface BusinessSearchResponse {

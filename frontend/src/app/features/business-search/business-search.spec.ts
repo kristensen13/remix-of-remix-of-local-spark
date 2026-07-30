@@ -45,18 +45,33 @@ describe('BusinessSearch', () => {
     component.query.set('  plumbers  ');
     component.location.set('   ');
     component.onSubmit();
-    expect(searchServiceStub.search).toHaveBeenCalledWith('plumbers', null);
+    expect(searchServiceStub.search).toHaveBeenCalledWith('plumbers', null, false);
   });
 
   it('calls search with the trimmed location when one is given', () => {
     component.query.set('plumbers');
     component.location.set(' Madrid ');
     component.onSubmit();
-    expect(searchServiceStub.search).toHaveBeenCalledWith('plumbers', 'Madrid');
+    expect(searchServiceStub.search).toHaveBeenCalledWith('plumbers', 'Madrid', false);
+  });
+
+  it('calls search with includeWithWebsite when the checkbox is checked', () => {
+    component.query.set('plumbers');
+    component.includeWithWebsite.set(true);
+    component.onSubmit();
+    expect(searchServiceStub.search).toHaveBeenCalledWith('plumbers', null, true);
   });
 
   it('calls GeneratedWebsitesService.generate with the result id', () => {
-    component.onGenerate({ id: 'r1', placeId: 'p1', name: 'Acme', address: '1 Main St', phone: null });
+    component.onGenerate({
+      id: 'r1',
+      placeId: 'p1',
+      name: 'Acme',
+      address: '1 Main St',
+      phone: null,
+      hasWebsite: false,
+      websiteUrl: null,
+    });
     expect(websitesServiceStub.generate).toHaveBeenCalledWith('r1');
   });
 
@@ -67,7 +82,15 @@ describe('BusinessSearch', () => {
         resolveGenerate = resolve;
       }),
     );
-    const result = { id: 'r1', placeId: 'p1', name: 'Acme', address: '1 Main St', phone: null };
+    const result = {
+      id: 'r1',
+      placeId: 'p1',
+      name: 'Acme',
+      address: '1 Main St',
+      phone: null,
+      hasWebsite: false,
+      websiteUrl: null,
+    };
 
     const generatePromise = component.onGenerate(result);
     expect(component.generatingResultId()).toBe('r1');

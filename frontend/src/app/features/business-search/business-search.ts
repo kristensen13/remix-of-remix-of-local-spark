@@ -16,6 +16,7 @@ export class BusinessSearch {
 
   readonly query = signal('');
   readonly location = signal('');
+  readonly includeWithWebsite = signal(false);
 
   readonly results = this.searchService.results;
   readonly isLoading = this.searchService.isLoading;
@@ -30,7 +31,7 @@ export class BusinessSearch {
       return;
     }
     const trimmedLocation = this.location().trim();
-    void this.searchService.search(trimmedQuery, trimmedLocation || null);
+    void this.searchService.search(trimmedQuery, trimmedLocation || null, this.includeWithWebsite());
   }
 
   async onGenerate(result: BusinessSearchResult): Promise<void> {

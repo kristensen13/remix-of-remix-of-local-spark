@@ -1,30 +1,41 @@
 <div class="mx-auto max-w-3xl p-6">
   <h1 class="mb-4 text-xl font-semibold">Buscar negocios locales</h1>
 
-  <form (ngSubmit)="onSubmit()" class="mb-6 flex flex-wrap gap-3">
-    <input
-      [ngModel]="query()"
-      (ngModelChange)="query.set($event)"
-      name="query"
-      type="text"
-      placeholder="ej. plomeros"
-      class="flex-1 rounded border border-slate-300 px-3 py-2"
-    />
-    <input
-      [ngModel]="location()"
-      (ngModelChange)="location.set($event)"
-      name="location"
-      type="text"
-      placeholder="Ubicación (opcional)"
-      class="flex-1 rounded border border-slate-300 px-3 py-2"
-    />
-    <button
-      type="submit"
-      [disabled]="isLoading()"
-      class="rounded bg-slate-900 px-4 py-2 text-white disabled:opacity-50"
-    >
-      {{ isLoading() ? 'Buscando…' : 'Buscar' }}
-    </button>
+  <form (ngSubmit)="onSubmit()" class="mb-6 flex flex-col gap-3">
+    <div class="flex flex-wrap gap-3">
+      <input
+        [ngModel]="query()"
+        (ngModelChange)="query.set($event)"
+        name="query"
+        type="text"
+        placeholder="ej. plomeros"
+        class="flex-1 rounded border border-slate-300 px-3 py-2"
+      />
+      <input
+        [ngModel]="location()"
+        (ngModelChange)="location.set($event)"
+        name="location"
+        type="text"
+        placeholder="Ubicación (opcional)"
+        class="flex-1 rounded border border-slate-300 px-3 py-2"
+      />
+      <button
+        type="submit"
+        [disabled]="isLoading()"
+        class="rounded bg-slate-900 px-4 py-2 text-white disabled:opacity-50"
+      >
+        {{ isLoading() ? 'Buscando…' : 'Buscar' }}
+      </button>
+    </div>
+    <label class="flex items-center gap-2 text-sm text-slate-600">
+      <input
+        [ngModel]="includeWithWebsite()"
+        (ngModelChange)="includeWithWebsite.set($event)"
+        name="includeWithWebsite"
+        type="checkbox"
+      />
+      Incluir negocios que ya tienen sitio web
+    </label>
   </form>
 
   @if (errorMessage()) {
@@ -39,6 +50,13 @@
           <p class="text-sm text-slate-600">{{ result.address }}</p>
           @if (result.phone) {
             <p class="text-sm text-slate-600">{{ result.phone }}</p>
+          }
+          @if (result.hasWebsite) {
+            <p class="text-sm text-slate-600">
+              <a [href]="result.websiteUrl" target="_blank" rel="noopener" class="underline">Ver sitio actual</a>
+            </p>
+          } @else {
+            <p class="text-sm text-slate-500">Sin sitio web</p>
           }
           <button
             type="button"
