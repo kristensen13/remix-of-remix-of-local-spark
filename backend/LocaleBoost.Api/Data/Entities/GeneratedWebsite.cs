@@ -8,5 +8,7 @@ public class GeneratedWebsite
     public string BusinessAddress { get; set; } = string.Empty;
     public string? BusinessPhone { get; set; }
     public string GeneratedContent { get; set; } = string.Empty;
+    public string? AuditSummary { get; set; }
+    public string? SourceWebsiteUrl { get; set; }
     public DateTime CreatedAt { get; set; }
 }

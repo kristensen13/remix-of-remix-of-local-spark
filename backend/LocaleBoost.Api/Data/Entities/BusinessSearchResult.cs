@@ -9,4 +9,5 @@ public class BusinessSearchResult
     public string Address { get; set; } = string.Empty;
     public string? Phone { get; set; }
     public bool HasWebsite { get; set; }
+    public string? WebsiteUrl { get; set; }
 }

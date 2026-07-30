@@ -52,7 +52,8 @@ public class EntityPersistenceTests : IClassFixture<CustomWebApplicationFactory>
                     Name = "Test Cafe",
                     Address = "Main St 1",
                     Phone = "555-0001",
-                    HasWebsite = false
+                    HasWebsite = true,
+                    WebsiteUrl = "https://test-cafe.example.com"
                 }
             }
         };
@@ -74,6 +75,8 @@ public class EntityPersistenceTests : IClassFixture<CustomWebApplicationFactory>
             BusinessAddress = "Main St 1",
             BusinessPhone = "555-0001",
             GeneratedContent = "<html></html>",
+            AuditSummary = "Le falta meta descripción y no es responsive.",
+            SourceWebsiteUrl = "https://test-cafe.example.com",
             CreatedAt = DateTime.UtcNow
         });
 
@@ -85,5 +88,10 @@ public class EntityPersistenceTests : IClassFixture<CustomWebApplicationFactory>
 
         Assert.Single(reloaded.Results);
         Assert.Equal("Test Cafe", reloaded.Results[0].Name);
+        Assert.Equal("https://test-cafe.example.com", reloaded.Results[0].WebsiteUrl);
+
+        var reloadedWebsite = await db.GeneratedWebsites.SingleAsync(w => w.UserId == userId);
+        Assert.Equal("Le falta meta descripción y no es responsive.", reloadedWebsite.AuditSummary);
+        Assert.Equal("https://test-cafe.example.com", reloadedWebsite.SourceWebsiteUrl);
     }
 }
