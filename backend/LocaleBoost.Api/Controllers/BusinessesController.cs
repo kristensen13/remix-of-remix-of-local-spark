@@ -27,14 +27,14 @@ public class BusinessesController : ControllerBase
 
     [HttpGet("search")]
     public async Task<ActionResult<BusinessSearchResponse>> Search(
-        [FromQuery] string query, [FromQuery] string? location)
+        [FromQuery] string query, [FromQuery] string? location, [FromQuery] bool includeWithWebsite = false)
     {
         if (string.IsNullOrWhiteSpace(query))
         {
             return BadRequest(new { message = "El término de búsqueda es obligatorio." });
         }
 
-        var places = await _googleMaps.SearchBusinessesAsync(query, location, includeWithWebsite: false);
+        var places = await _googleMaps.SearchBusinessesAsync(query, location, includeWithWebsite);
 
         var search = new BusinessSearch
         {
@@ -50,7 +50,8 @@ public class BusinessesController : ControllerBase
                 Name = p.Name,
                 Address = p.Address,
                 Phone = p.Phone,
-                HasWebsite = !string.IsNullOrWhiteSpace(p.WebsiteUrl)
+                HasWebsite = !string.IsNullOrWhiteSpace(p.WebsiteUrl),
+                WebsiteUrl = p.WebsiteUrl
             }).ToList()
         };
 
@@ -60,7 +61,7 @@ public class BusinessesController : ControllerBase
         return Ok(new BusinessSearchResponse(
             search.Id,
             search.Results
-                .Select(r => new BusinessSearchResultDto(r.Id, r.PlaceId, r.Name, r.Address, r.Phone))
+                .Select(r => new BusinessSearchResultDto(r.Id, r.PlaceId, r.Name, r.Address, r.Phone, r.HasWebsite, r.WebsiteUrl))
                 .ToList()));
     }
 
@@ -94,7 +95,7 @@ public class BusinessesController : ControllerBase
             search.Location,
             search.CreatedAt,
             search.Results
-                .Select(r => new BusinessSearchResultDto(r.Id, r.PlaceId, r.Name, r.Address, r.Phone))
+                .Select(r => new BusinessSearchResultDto(r.Id, r.PlaceId, r.Name, r.Address, r.Phone, r.HasWebsite, r.WebsiteUrl))
                 .ToList()));
     }
 }

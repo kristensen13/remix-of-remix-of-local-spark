@@ -1,3 +1,4 @@
+using System.Linq;
 using System.Net;
 using System.Net.Http.Headers;
 using System.Net.Http.Json;
@@ -18,10 +19,17 @@ public class FakeGoogleMapsService : IGoogleMapsService
     public Task<List<GoogleMapsPlace>> SearchBusinessesAsync(
         string query, string? location, bool includeWithWebsite, CancellationToken cancellationToken = default)
     {
-        return Task.FromResult(new List<GoogleMapsPlace>
+        var places = new List<GoogleMapsPlace>
         {
             new("place-1", "Test Business", "Test Address 1", "555-0001", null)
-        });
+        };
+
+        if (includeWithWebsite)
+        {
+            places.Add(new("place-2", "Test Business With Website", "Test Address 2", "555-0002", "https://existing-site.example.com"));
+        }
+
+        return Task.FromResult(places);
     }
 }
 
@@ -104,5 +112,25 @@ public class BusinessesControllerTests : IClassFixture<CustomWebApplicationFacto
             Assert.Single(persistedSearch.Results);
             Assert.Equal("Test Business", persistedSearch.Results[0].Name);
         }
+    }
+
+    [Fact]
+    public async Task Search_WithIncludeWithWebsiteTrue_ReturnsBothBusinessesWithCorrectWebsiteStatus()
+    {
+        var client = await CreateAuthenticatedClientAsync();
+
+        var response = await client.GetAsync("/api/businesses/search?query=cafes&includeWithWebsite=true");
+
+        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+        var body = await response.Content.ReadFromJsonAsync<BusinessSearchResponse>();
+        Assert.Equal(2, body!.Results.Count);
+
+        var withoutWebsite = body.Results.Single(r => r.Name == "Test Business");
+        Assert.False(withoutWebsite.HasWebsite);
+        Assert.Null(withoutWebsite.WebsiteUrl);
+
+        var withWebsite = body.Results.Single(r => r.Name == "Test Business With Website");
+        Assert.True(withWebsite.HasWebsite);
+        Assert.Equal("https://existing-site.example.com", withWebsite.WebsiteUrl);
     }
 }
