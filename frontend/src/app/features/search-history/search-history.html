@@ -37,7 +37,17 @@
       <h2 class="mb-2 font-medium">{{ detail.query }}</h2>
       <ul class="flex flex-col gap-2">
         @for (result of detail.results; track result.id) {
-          <li class="text-sm text-slate-600">{{ result.name }} — {{ result.address }}</li>
+          <li class="text-sm text-slate-600">
+            <p>{{ result.name }} — {{ result.address }}</p>
+            @if (result.phone) {
+              <p>{{ result.phone }}</p>
+            }
+            @if (result.hasWebsite) {
+              <p><a [href]="result.websiteUrl" target="_blank" rel="noopener" class="underline">Ver sitio actual</a></p>
+            } @else {
+              <p class="text-slate-500">Sin sitio web</p>
+            }
+          </li>
         }
       </ul>
     </div>
