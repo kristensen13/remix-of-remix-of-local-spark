@@ -14,8 +14,8 @@ public class GoogleMapsService : IGoogleMapsService
         _configuration = configuration;
     }
 
-    public async Task<List<GoogleMapsPlace>> SearchBusinessesWithoutWebsiteAsync(
-        string query, string? location, CancellationToken cancellationToken = default)
+    public async Task<List<GoogleMapsPlace>> SearchBusinessesAsync(
+        string query, string? location, bool includeWithWebsite, CancellationToken cancellationToken = default)
     {
         var textQuery = string.IsNullOrWhiteSpace(location) ? query : $"{query} {location}";
 
@@ -41,14 +41,19 @@ public class GoogleMapsService : IGoogleMapsService
         var payload = await response.Content.ReadFromJsonAsync<PlacesSearchResponse>(
             cancellationToken: cancellationToken);
 
-        return (payload?.Places ?? new List<PlaceResult>())
-            .Where(p => string.IsNullOrWhiteSpace(p.WebsiteUri))
+        var places = (payload?.Places ?? new List<PlaceResult>()).AsEnumerable();
+        if (!includeWithWebsite)
+        {
+            places = places.Where(p => string.IsNullOrWhiteSpace(p.WebsiteUri));
+        }
+
+        return places
             .Select(p => new GoogleMapsPlace(
                 p.Id,
                 p.DisplayName?.Text ?? string.Empty,
                 p.FormattedAddress ?? string.Empty,
                 p.NationalPhoneNumber,
-                HasWebsite: false))
+                p.WebsiteUri))
             .ToList();
     }
 

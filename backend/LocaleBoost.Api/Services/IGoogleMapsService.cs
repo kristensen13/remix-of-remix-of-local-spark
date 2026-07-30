@@ -1,9 +1,9 @@
 namespace LocaleBoost.Api.Services;
 
-public record GoogleMapsPlace(string PlaceId, string Name, string Address, string? Phone, bool HasWebsite);
+public record GoogleMapsPlace(string PlaceId, string Name, string Address, string? Phone, string? WebsiteUrl);
 
 public interface IGoogleMapsService
 {
-    Task<List<GoogleMapsPlace>> SearchBusinessesWithoutWebsiteAsync(
-        string query, string? location, CancellationToken cancellationToken = default);
+    Task<List<GoogleMapsPlace>> SearchBusinessesAsync(
+        string query, string? location, bool includeWithWebsite, CancellationToken cancellationToken = default);
 }

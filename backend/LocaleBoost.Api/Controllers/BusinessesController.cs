@@ -34,7 +34,7 @@ public class BusinessesController : ControllerBase
             return BadRequest(new { message = "El término de búsqueda es obligatorio." });
         }
 
-        var places = await _googleMaps.SearchBusinessesWithoutWebsiteAsync(query, location);
+        var places = await _googleMaps.SearchBusinessesAsync(query, location, includeWithWebsite: false);
 
         var search = new BusinessSearch
         {
@@ -50,7 +50,7 @@ public class BusinessesController : ControllerBase
                 Name = p.Name,
                 Address = p.Address,
                 Phone = p.Phone,
-                HasWebsite = p.HasWebsite
+                HasWebsite = !string.IsNullOrWhiteSpace(p.WebsiteUrl)
             }).ToList()
         };
 

@@ -15,12 +15,12 @@ namespace LocaleBoost.Api.Tests.IntegrationTests;
 
 public class FakeGoogleMapsService : IGoogleMapsService
 {
-    public Task<List<GoogleMapsPlace>> SearchBusinessesWithoutWebsiteAsync(
-        string query, string? location, CancellationToken cancellationToken = default)
+    public Task<List<GoogleMapsPlace>> SearchBusinessesAsync(
+        string query, string? location, bool includeWithWebsite, CancellationToken cancellationToken = default)
     {
         return Task.FromResult(new List<GoogleMapsPlace>
         {
-            new("place-1", "Test Business", "Test Address 1", "555-0001", false)
+            new("place-1", "Test Business", "Test Address 1", "555-0001", null)
         });
     }
 }
