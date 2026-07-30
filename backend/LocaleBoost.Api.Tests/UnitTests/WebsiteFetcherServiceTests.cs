@@ -44,6 +44,16 @@ public class WebsiteFetcherServiceTests
         }
     }
 
+    private class UnreachableHandler : HttpMessageHandler
+    {
+        protected override Task<HttpResponseMessage> SendAsync(
+            HttpRequestMessage request, CancellationToken cancellationToken)
+        {
+            throw new InvalidOperationException(
+                "This handler should never be invoked — the URL guard must reject before any HTTP send.");
+        }
+    }
+
     [Fact]
     public async Task FetchHtmlAsync_ReturnsContent_WhenUnderTheSizeLimit()
     {
@@ -91,5 +101,21 @@ public class WebsiteFetcherServiceTests
 
         Assert.Equal("No se pudo acceder al sitio web actual, intentá de nuevo.", ex.Message);
         Assert.IsType<HttpRequestException>(ex.InnerException);
+    }
+
+    [Theory]
+    [InlineData("file:///etc/passwd")]
+    [InlineData("ftp://internal.example.com/secret")]
+    [InlineData("/relative/path")]
+    [InlineData("not a url at all")]
+    public async Task FetchHtmlAsync_WhenUrlIsNotAbsoluteHttpOrHttps_ThrowsWithoutCallingHandler(string url)
+    {
+        var httpClient = new HttpClient(new UnreachableHandler());
+        var service = new WebsiteFetcherService(httpClient);
+
+        var ex = await Assert.ThrowsAsync<ExternalServiceException>(
+            () => service.FetchHtmlAsync(url));
+
+        Assert.Equal("No se pudo acceder al sitio web actual, intentá de nuevo.", ex.Message);
     }
 }

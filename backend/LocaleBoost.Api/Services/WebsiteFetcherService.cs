@@ -12,6 +12,14 @@ public class WebsiteFetcherService : IWebsiteFetcherService
 
     public async Task<string> FetchHtmlAsync(string url, CancellationToken cancellationToken = default)
     {
+        if (!Uri.TryCreate(url, UriKind.Absolute, out var uri)
+            || (uri.Scheme != Uri.UriSchemeHttp && uri.Scheme != Uri.UriSchemeHttps))
+        {
+            throw new ExternalServiceException(
+                "No se pudo acceder al sitio web actual, intentá de nuevo.",
+                new InvalidOperationException($"URL con esquema no permitido o relativa: '{url}'."));
+        }
+
         string content;
         try
         {

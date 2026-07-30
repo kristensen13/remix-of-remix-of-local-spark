@@ -80,6 +80,16 @@ public class ClaudeService : IClaudeService
                 Messages = [new() { Role = Role.User, Content = prompt }],
             }, cancellationToken);
 
+            if (response.StopReason?.Value() == StopReason.MaxTokens)
+            {
+                Console.Error.WriteLine(
+                    "ClaudeService.AuditAndProposeWebsiteAsync: Claude audit response was truncated " +
+                    "(stop_reason=max_tokens). Consider raising MaxTokens or shortening the prompt/HTML input.");
+                throw new ExternalServiceException(
+                    "No se pudo generar la auditoría, intentá de nuevo.",
+                    new InvalidOperationException("Claude response truncated: stop_reason=max_tokens"));
+            }
+
             rawText = response.Content
                 .Select(b => b.Value)
                 .OfType<TextBlock>()
@@ -87,6 +97,8 @@ public class ClaudeService : IClaudeService
         }
         catch (AnthropicException ex)
         {
+            Console.Error.WriteLine(
+                $"ClaudeService.AuditAndProposeWebsiteAsync: Anthropic API call failed: {ex.Message}");
             throw new ExternalServiceException("No se pudo generar la auditoría, intentá de nuevo.", ex);
         }
 
@@ -96,6 +108,9 @@ public class ClaudeService : IClaudeService
         }
         catch (JsonException ex)
         {
+            Console.Error.WriteLine(
+                "ClaudeService.AuditAndProposeWebsiteAsync: Failed to parse audit JSON response " +
+                $"(possible truncation not flagged by stop_reason, or malformed output): {ex.Message}");
             throw new ExternalServiceException("No se pudo generar la auditoría, intentá de nuevo.", ex);
         }
     }

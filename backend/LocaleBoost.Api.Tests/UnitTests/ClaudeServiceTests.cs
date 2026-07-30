@@ -131,6 +131,31 @@ public class ClaudeServiceTests
     }
 
     [Fact]
+    public async Task AuditAndProposeWebsiteAsync_WhenResponseTruncatedByMaxTokens_ThrowsExternalServiceException()
+    {
+        var claudeResponseJson =
+            "{\"content\": [{\"type\": \"text\", \"text\": \"{\\\"audit\\\": \\\"incompleto\\\", \\\"html\\\": \\\"<html>\"}], " +
+            "\"stop_reason\": \"max_tokens\"}";
+
+        var httpClient = new HttpClient(new FakeHandler(claudeResponseJson))
+        {
+            BaseAddress = new Uri("https://api.anthropic.com/")
+        };
+        var anthropicClient = new AnthropicClient
+        {
+            ApiKey = "test-key",
+            HttpClient = httpClient
+        };
+
+        var service = new ClaudeService(anthropicClient);
+
+        var ex = await Assert.ThrowsAsync<ExternalServiceException>(
+            () => service.AuditAndProposeWebsiteAsync("Test Cafe", "Main St 1", "111", "<html></html>"));
+
+        Assert.Equal("No se pudo generar la auditoría, intentá de nuevo.", ex.Message);
+    }
+
+    [Fact]
     public async Task AuditAndProposeWebsiteAsync_WhenAnthropicApiFails_WrapsAsExternalServiceException()
     {
         var httpClient = new HttpClient(new ErrorStatusHandler())
