@@ -20,6 +20,13 @@ public class FakeClaudeService : IClaudeService
     {
         return Task.FromResult($"<html>{businessName}</html>");
     }
+
+    public Task<WebsiteAuditResult> AuditAndProposeWebsiteAsync(
+        string businessName, string address, string? phone, string existingSiteHtml,
+        CancellationToken cancellationToken = default)
+    {
+        return Task.FromResult(new WebsiteAuditResult("Fake audit report", "<html>Improved</html>"));
+    }
 }
 
 public class WebsitesControllerTests : IClassFixture<CustomWebApplicationFactory>
