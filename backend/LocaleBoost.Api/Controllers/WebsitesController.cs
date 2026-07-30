@@ -15,11 +15,13 @@ namespace LocaleBoost.Api.Controllers;
 public class WebsitesController : ControllerBase
 {
     private readonly IClaudeService _claude;
+    private readonly IWebsiteFetcherService _websiteFetcher;
     private readonly AppDbContext _db;
 
-    public WebsitesController(IClaudeService claude, AppDbContext db)
+    public WebsitesController(IClaudeService claude, IWebsiteFetcherService websiteFetcher, AppDbContext db)
     {
         _claude = claude;
+        _websiteFetcher = websiteFetcher;
         _db = db;
     }
 
@@ -42,7 +44,22 @@ public class WebsitesController : ControllerBase
             return NotFound();
         }
 
-        var html = await _claude.GenerateWebsiteHtmlAsync(result.Name, result.Address, result.Phone);
+        string generatedContent;
+        string? auditSummary = null;
+        string? sourceWebsiteUrl = null;
+
+        if (!string.IsNullOrWhiteSpace(result.WebsiteUrl))
+        {
+            var existingHtml = await _websiteFetcher.FetchHtmlAsync(result.WebsiteUrl);
+            var audit = await _claude.AuditAndProposeWebsiteAsync(result.Name, result.Address, result.Phone, existingHtml);
+            generatedContent = audit.ProposedHtml;
+            auditSummary = audit.AuditSummary;
+            sourceWebsiteUrl = result.WebsiteUrl;
+        }
+        else
+        {
+            generatedContent = await _claude.GenerateWebsiteHtmlAsync(result.Name, result.Address, result.Phone);
+        }
 
         var website = new GeneratedWebsite
         {
@@ -51,7 +68,9 @@ public class WebsitesController : ControllerBase
             BusinessName = result.Name,
             BusinessAddress = result.Address,
             BusinessPhone = result.Phone,
-            GeneratedContent = html,
+            GeneratedContent = generatedContent,
+            AuditSummary = auditSummary,
+            SourceWebsiteUrl = sourceWebsiteUrl,
             CreatedAt = DateTime.UtcNow
         };
 
@@ -60,7 +79,8 @@ public class WebsitesController : ControllerBase
 
         return Ok(new GeneratedWebsiteDto(
             website.Id, website.BusinessName, website.BusinessAddress,
-            website.BusinessPhone, website.GeneratedContent, website.CreatedAt));
+            website.BusinessPhone, website.GeneratedContent, website.AuditSummary, website.SourceWebsiteUrl,
+            website.CreatedAt));
     }
 
     [HttpGet]
@@ -70,7 +90,8 @@ public class WebsitesController : ControllerBase
             .Where(w => w.UserId == CurrentUserId)
             .OrderByDescending(w => w.CreatedAt)
             .Select(w => new GeneratedWebsiteDto(
-                w.Id, w.BusinessName, w.BusinessAddress, w.BusinessPhone, w.GeneratedContent, w.CreatedAt))
+                w.Id, w.BusinessName, w.BusinessAddress, w.BusinessPhone,
+                w.GeneratedContent, w.AuditSummary, w.SourceWebsiteUrl, w.CreatedAt))
             .ToListAsync();
 
         return Ok(websites);

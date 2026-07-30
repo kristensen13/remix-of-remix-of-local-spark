@@ -1,3 +1,4 @@
+using System.Linq;
 using System.Net;
 using System.Net.Http.Headers;
 using System.Net.Http.Json;
@@ -29,6 +30,14 @@ public class FakeClaudeService : IClaudeService
     }
 }
 
+public class FakeWebsiteFetcherService : IWebsiteFetcherService
+{
+    public Task<string> FetchHtmlAsync(string url, CancellationToken cancellationToken = default)
+    {
+        return Task.FromResult("<html><body>Old site</body></html>");
+    }
+}
+
 public class WebsitesControllerTests : IClassFixture<CustomWebApplicationFactory>
 {
     private readonly WebApplicationFactory<Program> _factory;
@@ -46,6 +55,10 @@ public class WebsitesControllerTests : IClassFixture<CustomWebApplicationFactory
                 var claudeDescriptor = services.SingleOrDefault(d => d.ServiceType == typeof(IClaudeService));
                 if (claudeDescriptor is not null) services.Remove(claudeDescriptor);
                 services.AddScoped<IClaudeService, FakeClaudeService>();
+
+                var fetcherDescriptor = services.SingleOrDefault(d => d.ServiceType == typeof(IWebsiteFetcherService));
+                if (fetcherDescriptor is not null) services.Remove(fetcherDescriptor);
+                services.AddScoped<IWebsiteFetcherService, FakeWebsiteFetcherService>();
             });
         });
     }
@@ -88,6 +101,24 @@ public class WebsitesControllerTests : IClassFixture<CustomWebApplicationFactory
         Assert.Equal(HttpStatusCode.OK, response.StatusCode);
         var body = await response.Content.ReadFromJsonAsync<GeneratedWebsiteDto>();
         Assert.Equal("<html>Test Business</html>", body!.GeneratedContent);
+    }
+
+    [Fact]
+    public async Task Generate_ForResultWithExistingWebsite_ReturnsAuditAndProposedHtml()
+    {
+        var client = await CreateAuthenticatedClientAsync();
+        var searchResponse = await client.GetAsync("/api/businesses/search?query=cafes&includeWithWebsite=true");
+        var search = await searchResponse.Content.ReadFromJsonAsync<BusinessSearchResponse>();
+        var resultWithWebsite = search!.Results.Single(r => r.HasWebsite);
+
+        var response = await client.PostAsJsonAsync("/api/websites/generate",
+            new GenerateWebsiteRequest(resultWithWebsite.Id));
+
+        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+        var body = await response.Content.ReadFromJsonAsync<GeneratedWebsiteDto>();
+        Assert.Equal("<html>Improved</html>", body!.GeneratedContent);
+        Assert.Equal("Fake audit report", body.AuditSummary);
+        Assert.Equal(resultWithWebsite.WebsiteUrl, body.SourceWebsiteUrl);
     }
 
     [Fact]
