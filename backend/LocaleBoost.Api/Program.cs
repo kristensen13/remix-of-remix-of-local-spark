@@ -60,6 +60,7 @@ builder.Services.AddHttpClient<IWebsiteFetcherService, WebsiteFetcherService>(cl
 });
 
 builder.Services.AddScoped<IClaudeService, ClaudeService>();
+builder.Services.AddScoped<IFacturacionCalculoService, FacturacionCalculoService>();
 
 var app = builder.Build();
 
