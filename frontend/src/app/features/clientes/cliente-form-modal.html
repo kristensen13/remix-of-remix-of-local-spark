@@ -1,0 +1,131 @@
+<dialog #dialogEl class="rounded-lg p-0 backdrop:bg-black/40">
+  <form (ngSubmit)="onSubmit()" class="flex w-96 flex-col gap-3 p-6">
+    <h2 class="text-lg font-semibold">{{ editingId() ? 'Editar cliente' : 'Nuevo cliente' }}</h2>
+
+    @if (formError()) {
+      <p class="rounded bg-red-50 px-3 py-2 text-sm text-red-700">{{ formError() }}</p>
+    }
+
+    <label class="flex flex-col gap-1 text-sm">
+      Nombre *
+      <input
+        [ngModel]="nombre()"
+        (ngModelChange)="nombre.set($event)"
+        name="nombre"
+        type="text"
+        class="rounded border border-slate-300 px-3 py-2"
+      />
+    </label>
+
+    <label class="flex flex-col gap-1 text-sm">
+      NIF *
+      <input
+        [ngModel]="nif()"
+        (ngModelChange)="nif.set($event)"
+        name="nif"
+        type="text"
+        class="rounded border border-slate-300 px-3 py-2"
+      />
+    </label>
+
+    <label class="flex flex-col gap-1 text-sm">
+      Dirección *
+      <input
+        [ngModel]="direccion()"
+        (ngModelChange)="direccion.set($event)"
+        name="direccion"
+        type="text"
+        class="rounded border border-slate-300 px-3 py-2"
+      />
+    </label>
+
+    <label class="flex flex-col gap-1 text-sm">
+      Código postal
+      <input
+        [ngModel]="codigoPostal()"
+        (ngModelChange)="codigoPostal.set($event)"
+        name="codigoPostal"
+        type="text"
+        class="rounded border border-slate-300 px-3 py-2"
+      />
+    </label>
+
+    <label class="flex flex-col gap-1 text-sm">
+      Ciudad
+      <input
+        [ngModel]="ciudad()"
+        (ngModelChange)="ciudad.set($event)"
+        name="ciudad"
+        type="text"
+        class="rounded border border-slate-300 px-3 py-2"
+      />
+    </label>
+
+    <label class="flex flex-col gap-1 text-sm">
+      Provincia
+      <input
+        [ngModel]="provincia()"
+        (ngModelChange)="provincia.set($event)"
+        name="provincia"
+        type="text"
+        class="rounded border border-slate-300 px-3 py-2"
+      />
+    </label>
+
+    <label class="flex flex-col gap-1 text-sm">
+      País
+      <input
+        [ngModel]="pais()"
+        (ngModelChange)="pais.set($event)"
+        name="pais"
+        type="text"
+        class="rounded border border-slate-300 px-3 py-2"
+      />
+    </label>
+
+    <label class="flex flex-col gap-1 text-sm">
+      Email
+      <input
+        [ngModel]="email()"
+        (ngModelChange)="email.set($event)"
+        name="email"
+        type="email"
+        class="rounded border border-slate-300 px-3 py-2"
+      />
+    </label>
+
+    <label class="flex flex-col gap-1 text-sm">
+      Teléfono
+      <input
+        [ngModel]="telefono()"
+        (ngModelChange)="telefono.set($event)"
+        name="telefono"
+        type="text"
+        class="rounded border border-slate-300 px-3 py-2"
+      />
+    </label>
+
+    <label class="flex items-center gap-2 text-sm text-slate-600">
+      <input
+        [ngModel]="esAutonomoOProfesional()"
+        (ngModelChange)="esAutonomoOProfesional.set($event)"
+        name="esAutonomoOProfesional"
+        type="checkbox"
+      />
+      Autónomo o profesional
+    </label>
+
+    <div class="mt-2 flex justify-end gap-2">
+      <button type="button" (click)="cancel()" class="rounded px-4 py-2 text-sm text-slate-600 hover:bg-slate-100">
+        Cancelar
+      </button>
+      <button
+        type="submit"
+        [disabled]="isSaving()"
+        class="rounded bg-slate-900 px-4 py-2 text-sm text-white disabled:opacity-50"
+      >
+        {{ isSaving() ? 'Guardando…' : 'Guardar' }}
+      </button>
+    </div>
+  </form>
+</dialog>
