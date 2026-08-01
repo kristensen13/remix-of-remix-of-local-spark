@@ -1,0 +1,59 @@
+<div class="mx-auto max-w-4xl p-6">
+  <div class="mb-4 flex items-center justify-between">
+    <h1 class="text-xl font-semibold">Clientes</h1>
+    <button type="button" (click)="onNew()" class="rounded bg-slate-900 px-4 py-2 text-sm text-white">
+      Nuevo cliente
+    </button>
+  </div>
+
+  <input
+    [ngModel]="searchTerm()"
+    (ngModelChange)="searchTerm.set($event)"
+    name="searchTerm"
+    type="text"
+    placeholder="Buscar por nombre o NIF…"
+    class="mb-4 w-full rounded border border-slate-300 px-3 py-2 sm:w-80"
+  />
+
+  @if (clientesService.errorMessage()) {
+    <p class="mb-4 rounded bg-red-50 px-3 py-2 text-sm text-red-700">{{ clientesService.errorMessage() }}</p>
+  }
+
+  @if (clientesService.isLoading()) {
+    <p class="text-sm text-slate-500">Cargando…</p>
+  } @else if (filteredClientes().length > 0) {
+    <table class="w-full border-collapse text-left text-sm">
+      <thead>
+        <tr class="border-b border-slate-200 text-slate-500">
+          <th class="py-2">Nombre</th>
+          <th class="py-2">NIF</th>
+          <th class="py-2">Email</th>
+          <th class="py-2">Teléfono</th>
+          <th class="py-2"></th>
+        </tr>
+      </thead>
+      <tbody>
+        @for (cliente of filteredClientes(); track cliente.id) {
+          <tr class="border-b border-slate-100">
+            <td class="py-2">{{ cliente.nombre }}</td>
+            <td class="py-2">{{ cliente.nif }}</td>
+            <td class="py-2">{{ cliente.email || '—' }}</td>
+            <td class="py-2">{{ cliente.telefono || '—' }}</td>
+            <td class="py-2 text-right">
+              <button type="button" (click)="onEdit(cliente)" class="mr-3 text-slate-600 hover:underline">
+                Editar
+              </button>
+              <button type="button" (click)="onDelete(cliente)" class="text-red-600 hover:underline">
+                Eliminar
+              </button>
+            </td>
+          </tr>
+        }
+      </tbody>
+    </table>
+  } @else {
+    <p class="text-sm text-slate-500">Todavía no hay clientes — creá el primero arriba.</p>
+  }
+
+  <app-cliente-form-modal (saved)="onSaved()" />
+</div>
