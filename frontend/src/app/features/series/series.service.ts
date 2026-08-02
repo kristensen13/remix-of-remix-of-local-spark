@@ -1,10 +1,10 @@
-import { Injectable, signal, inject } from '@angular/core';
+import { Service, signal, inject } from '@angular/core';
 import { HttpClient, HttpErrorResponse } from '@angular/common/http';
 import { firstValueFrom } from 'rxjs';
 import { Serie, CreateSerieRequest } from '../../core/models/serie.models';
 import { extractErrorMessage } from '../../core/http-error.util';
 
-@Injectable()
+@Service()
 export class SeriesService {
   private readonly http = inject(HttpClient);
 
