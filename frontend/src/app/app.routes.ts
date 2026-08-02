@@ -5,6 +5,7 @@ import { BusinessSearch } from './features/business-search/business-search';
 import { SearchHistory } from './features/search-history/search-history';
 import { GeneratedWebsites } from './features/generated-websites/generated-websites';
 import { Clientes } from './features/clientes/clientes';
+import { Series } from './features/series/series';
 import { Layout } from './shared/layout/layout';
 import { NotFound } from './shared/not-found/not-found';
 
@@ -19,6 +20,7 @@ export const routes: Routes = [
       { path: 'history', component: SearchHistory },
       { path: 'websites', component: GeneratedWebsites },
       { path: 'clientes', component: Clientes },
+      { path: 'series', component: Series },
       { path: '', pathMatch: 'full', redirectTo: 'search' },
     ],
   },
