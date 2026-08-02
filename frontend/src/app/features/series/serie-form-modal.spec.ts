@@ -62,6 +62,28 @@ describe('SerieFormModal', () => {
     expect(seriesServiceStub.create).not.toHaveBeenCalled();
   });
 
+  it('onSubmit() blocks and sets formError when año is outside 2000-2100', async () => {
+    component.openForCreate();
+    component.codigo.set('A');
+    component.anio.set(99999);
+
+    await component.onSubmit();
+
+    expect(component.formError()).toBe('El año debe ser un número entre 2000 y 2100.');
+    expect(seriesServiceStub.create).not.toHaveBeenCalled();
+  });
+
+  it('onSubmit() blocks and sets formError when año is null (input cleared)', async () => {
+    component.openForCreate();
+    component.codigo.set('A');
+    component.anio.set(null as unknown as number);
+
+    await component.onSubmit();
+
+    expect(component.formError()).toBe('El año debe ser un número entre 2000 y 2100.');
+    expect(seriesServiceStub.create).not.toHaveBeenCalled();
+  });
+
   it('onSubmit() calls create(), closes the dialog, and emits saved', async () => {
     const savedSpy = vi.fn();
     component.saved.subscribe(savedSpy);

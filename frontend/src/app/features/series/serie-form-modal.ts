@@ -43,10 +43,16 @@ export class SerieFormModal {
       return;
     }
 
+    const anio = Number(this.anio());
+    if (!Number.isInteger(anio) || anio < 2000 || anio > 2100) {
+      this.formError.set('El año debe ser un número entre 2000 y 2100.');
+      return;
+    }
+
     const request: CreateSerieRequest = {
       codigo,
       descripcion: this.descripcion().trim() || null,
-      anio: this.anio(),
+      anio,
       esRectificativa: this.esRectificativa(),
     };
 
