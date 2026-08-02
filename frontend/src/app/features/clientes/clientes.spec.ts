@@ -104,4 +104,79 @@ describe('Clientes', () => {
     await component.onDelete(cliente1);
     expect(clientesServiceStub.remove).toHaveBeenCalledWith('c1');
   });
+
+  describe('template rendering', () => {
+    it('renders one table row per cliente', () => {
+      const localStub = {
+        clientes: signal<Cliente[]>([cliente1, cliente2]),
+        isLoading: signal(false),
+        errorMessage: signal<string | null>(null),
+        load: vi.fn().mockResolvedValue(undefined),
+        remove: vi.fn().mockResolvedValue(undefined),
+      };
+
+      TestBed.resetTestingModule();
+      TestBed.configureTestingModule({
+        providers: [{ provide: ClientesService, useValue: localStub }],
+      });
+
+      const fixture = TestBed.createComponent(Clientes);
+      fixture.detectChanges();
+
+      const rows = fixture.nativeElement.querySelectorAll('tbody tr');
+      expect(rows.length).toBe(2);
+
+      const text = fixture.nativeElement.textContent as string;
+      expect(text).toContain('Acme SL');
+      expect(text).toContain('B12345678');
+      expect(text).toContain('Beta Autónomo');
+      expect(text).toContain('12345678Z');
+    });
+
+    it('shows "Ningún cliente coincide con la búsqueda." when a search matches nothing', () => {
+      const localStub = {
+        clientes: signal<Cliente[]>([cliente1, cliente2]),
+        isLoading: signal(false),
+        errorMessage: signal<string | null>(null),
+        load: vi.fn().mockResolvedValue(undefined),
+        remove: vi.fn().mockResolvedValue(undefined),
+      };
+
+      TestBed.resetTestingModule();
+      TestBed.configureTestingModule({
+        providers: [{ provide: ClientesService, useValue: localStub }],
+      });
+
+      const fixture = TestBed.createComponent(Clientes);
+      fixture.detectChanges();
+
+      fixture.componentInstance.searchTerm.set('somethingThatMatchesNothing');
+      fixture.detectChanges();
+
+      const text = fixture.nativeElement.textContent as string;
+      expect(text).toContain('Ningún cliente coincide con la búsqueda.');
+      expect(text).not.toContain('Todavía no hay clientes');
+    });
+
+    it('shows "Todavía no hay clientes" when there are no clientes at all', () => {
+      const localStub = {
+        clientes: signal<Cliente[]>([]),
+        isLoading: signal(false),
+        errorMessage: signal<string | null>(null),
+        load: vi.fn().mockResolvedValue(undefined),
+        remove: vi.fn().mockResolvedValue(undefined),
+      };
+
+      TestBed.resetTestingModule();
+      TestBed.configureTestingModule({
+        providers: [{ provide: ClientesService, useValue: localStub }],
+      });
+
+      const fixture = TestBed.createComponent(Clientes);
+      fixture.detectChanges();
+
+      const text = fixture.nativeElement.textContent as string;
+      expect(text).toContain('Todavía no hay clientes — creá el primero con "Nuevo cliente".');
+    });
+  });
 });

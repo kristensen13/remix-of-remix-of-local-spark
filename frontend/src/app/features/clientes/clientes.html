@@ -51,8 +51,10 @@
         }
       </tbody>
     </table>
+  } @else if (clientesService.clientes().length === 0) {
+    <p class="text-sm text-slate-500">Todavía no hay clientes — creá el primero con "Nuevo cliente".</p>
   } @else {
-    <p class="text-sm text-slate-500">Todavía no hay clientes — creá el primero arriba.</p>
+    <p class="text-sm text-slate-500">Ningún cliente coincide con la búsqueda.</p>
   }
 
   <app-cliente-form-modal (saved)="onSaved()" />
