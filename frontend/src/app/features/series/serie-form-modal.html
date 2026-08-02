@@ -1,0 +1,65 @@
+<dialog #dialogEl class="rounded-lg p-0 backdrop:bg-black/40">
+  <form (ngSubmit)="onSubmit()" class="flex w-96 flex-col gap-3 p-6">
+    <h2 class="text-lg font-semibold">Nueva serie</h2>
+
+    @if (formError()) {
+      <p class="rounded bg-red-50 px-3 py-2 text-sm text-red-700">{{ formError() }}</p>
+    }
+
+    <label class="flex flex-col gap-1 text-sm">
+      Código *
+      <input
+        [ngModel]="codigo()"
+        (ngModelChange)="codigo.set($event)"
+        name="codigo"
+        type="text"
+        class="rounded border border-slate-300 px-3 py-2"
+      />
+    </label>
+
+    <label class="flex flex-col gap-1 text-sm">
+      Descripción
+      <input
+        [ngModel]="descripcion()"
+        (ngModelChange)="descripcion.set($event)"
+        name="descripcion"
+        type="text"
+        class="rounded border border-slate-300 px-3 py-2"
+      />
+    </label>
+
+    <label class="flex flex-col gap-1 text-sm">
+      Año *
+      <input
+        [ngModel]="anio()"
+        (ngModelChange)="anio.set($event)"
+        name="anio"
+        type="number"
+        class="rounded border border-slate-300 px-3 py-2"
+      />
+    </label>
+
+    <label class="flex items-center gap-2 text-sm text-slate-600">
+      <input
+        [ngModel]="esRectificativa()"
+        (ngModelChange)="esRectificativa.set($event)"
+        name="esRectificativa"
+        type="checkbox"
+      />
+      Es rectificativa
+    </label>
+
+    <div class="mt-2 flex justify-end gap-2">
+      <button type="button" (click)="cancel()" class="rounded px-4 py-2 text-sm text-slate-600 hover:bg-slate-100">
+        Cancelar
+      </button>
+      <button
+        type="submit"
+        [disabled]="isSaving()"
+        class="rounded bg-slate-900 px-4 py-2 text-sm text-white disabled:opacity-50"
+      >
+        {{ isSaving() ? 'Guardando…' : 'Guardar' }}
+      </button>
+    </div>
+  </form>
+</dialog>
