@@ -1,0 +1,164 @@
+<dialog #dialogEl class="rounded-lg p-0 backdrop:bg-black/40">
+  <form (ngSubmit)="onSubmit()" class="flex w-[640px] max-w-full flex-col gap-3 p-6">
+    <h2 class="text-lg font-semibold">{{ editingId() ? 'Editar presupuesto' : 'Nuevo presupuesto' }}</h2>
+
+    @if (formError()) {
+      <p class="rounded bg-red-50 px-3 py-2 text-sm text-red-700">{{ formError() }}</p>
+    }
+
+    <label class="flex flex-col gap-1 text-sm">
+      Cliente *
+      <select
+        [ngModel]="clienteId()"
+        (ngModelChange)="clienteId.set($event)"
+        name="clienteId"
+        [disabled]="editingId() !== null"
+        class="rounded border border-slate-300 px-3 py-2 disabled:bg-slate-100"
+      >
+        <option [ngValue]="''" disabled>Seleccioná un cliente…</option>
+        @for (cliente of clientesService.clientes(); track cliente.id) {
+          <option [ngValue]="cliente.id">{{ cliente.nombre }}</option>
+        }
+      </select>
+    </label>
+
+    <label class="flex flex-col gap-1 text-sm">
+      Número *
+      <input
+        [ngModel]="numero()"
+        (ngModelChange)="numero.set($event)"
+        name="numero"
+        type="text"
+        [disabled]="editingId() !== null"
+        class="rounded border border-slate-300 px-3 py-2 disabled:bg-slate-100"
+      />
+    </label>
+
+    <label class="flex flex-col gap-1 text-sm">
+      Fecha de validez
+      <input
+        [ngModel]="fechaValidez()"
+        (ngModelChange)="fechaValidez.set($event)"
+        name="fechaValidez"
+        type="date"
+        class="rounded border border-slate-300 px-3 py-2"
+      />
+    </label>
+
+    <label class="flex flex-col gap-1 text-sm">
+      Notas
+      <textarea
+        [ngModel]="notas()"
+        (ngModelChange)="notas.set($event)"
+        name="notas"
+        rows="2"
+        class="rounded border border-slate-300 px-3 py-2"
+      ></textarea>
+    </label>
+
+    <div class="flex flex-col gap-2">
+      <div class="flex items-center justify-between">
+        <span class="text-sm font-medium">Líneas</span>
+        <button type="button" (click)="addLinea()" class="text-sm text-slate-600 hover:underline">
+          Añadir línea
+        </button>
+      </div>
+
+      <table class="w-full border-collapse text-left text-xs">
+        <thead>
+          <tr class="border-b border-slate-200 text-slate-500">
+            <th class="py-1">Tipo</th>
+            <th class="py-1">Descripción</th>
+            <th class="py-1">Cantidad</th>
+            <th class="py-1">Precio</th>
+            <th class="py-1">IVA</th>
+            <th class="py-1"></th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (fila of lineas(); track fila.rowId) {
+            <tr class="border-b border-slate-100">
+              <td class="py-1 pr-1">
+                <select
+                  [ngModel]="fila.tipo"
+                  (ngModelChange)="updateLinea(fila.rowId, { tipo: $event })"
+                  [name]="'tipo-' + fila.rowId"
+                  class="w-full rounded border border-slate-300 px-1 py-1"
+                >
+                  <option [ngValue]="TipoLinea.ServicioPorHoras">Servicio por horas</option>
+                  <option [ngValue]="TipoLinea.ServicioPrecioFijo">Servicio a precio fijo</option>
+                  <option [ngValue]="TipoLinea.Suscripcion">Suscripción</option>
+                  <option [ngValue]="TipoLinea.Producto">Producto</option>
+                </select>
+              </td>
+              <td class="py-1 pr-1">
+                <input
+                  [ngModel]="fila.descripcion"
+                  (ngModelChange)="updateLinea(fila.rowId, { descripcion: $event })"
+                  [name]="'descripcion-' + fila.rowId"
+                  type="text"
+                  class="w-full rounded border border-slate-300 px-1 py-1"
+                />
+              </td>
+              <td class="py-1 pr-1">
+                <input
+                  [ngModel]="fila.cantidad"
+                  (ngModelChange)="updateLinea(fila.rowId, { cantidad: $event })"
+                  [name]="'cantidad-' + fila.rowId"
+                  type="number"
+                  class="w-20 rounded border border-slate-300 px-1 py-1"
+                />
+              </td>
+              <td class="py-1 pr-1">
+                <input
+                  [ngModel]="fila.precioUnitario"
+                  (ngModelChange)="updateLinea(fila.rowId, { precioUnitario: $event })"
+                  [name]="'precioUnitario-' + fila.rowId"
+                  type="number"
+                  class="w-20 rounded border border-slate-300 px-1 py-1"
+                />
+              </td>
+              <td class="py-1 pr-1">
+                <select
+                  [ngModel]="fila.tipoIva"
+                  (ngModelChange)="updateLinea(fila.rowId, { tipoIva: $event })"
+                  [name]="'tipoIva-' + fila.rowId"
+                  class="w-full rounded border border-slate-300 px-1 py-1"
+                >
+                  <option [ngValue]="TipoIva.General21">21%</option>
+                  <option [ngValue]="TipoIva.Reducido10">10%</option>
+                  <option [ngValue]="TipoIva.Superreducido4">4%</option>
+                  <option [ngValue]="TipoIva.Exento">Exento</option>
+                </select>
+              </td>
+              <td class="py-1 text-right">
+                <button type="button" (click)="removeLinea(fila.rowId)" class="text-red-600 hover:underline">
+                  Quitar
+                </button>
+              </td>
+            </tr>
+          }
+        </tbody>
+      </table>
+
+      <div class="flex flex-col items-end gap-0.5 text-sm text-slate-600">
+        <span>Subtotal: {{ resumen().subtotal.toFixed(2) }} €</span>
+        <span>IVA: {{ resumen().totalIva.toFixed(2) }} €</span>
+        <span class="font-semibold text-slate-900">Total: {{ resumen().total.toFixed(2) }} €</span>
+      </div>
+    </div>
+
+    <div class="mt-2 flex justify-end gap-2">
+      <button type="button" (click)="cancel()" class="rounded px-4 py-2 text-sm text-slate-600 hover:bg-slate-100">
+        Cancelar
+      </button>
+      <button
+        type="submit"
+        [disabled]="isSaving()"
+        class="rounded bg-slate-900 px-4 py-2 text-sm text-white disabled:opacity-50"
+      >
+        {{ isSaving() ? 'Guardando…' : 'Guardar' }}
+      </button>
+    </div>
+  </form>
+</dialog>
