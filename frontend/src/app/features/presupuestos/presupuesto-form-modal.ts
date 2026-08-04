@@ -150,6 +150,10 @@ export class PresupuestoFormModal {
         this.formError.set(`Línea ${n}: la cantidad debe ser mayor que 0.`);
         return;
       }
+      if (fila.precioUnitario === null || fila.precioUnitario === undefined) {
+        this.formError.set(`Línea ${n}: el precio unitario es obligatorio.`);
+        return;
+      }
       const precioUnitario = Number(fila.precioUnitario);
       if (!Number.isFinite(precioUnitario) || precioUnitario < 0) {
         this.formError.set(`Línea ${n}: el precio unitario no puede ser negativo.`);
@@ -170,7 +174,7 @@ export class PresupuestoFormModal {
     try {
       if (editingId) {
         const request: UpdatePresupuestoRequest = {
-          fechaValidez: this.fechaValidez() || null,
+          fechaValidez: this.toInstante(this.fechaValidez()),
           notas: this.notas().trim() || null,
           lineas: lineasRequest,
         };
@@ -179,7 +183,7 @@ export class PresupuestoFormModal {
         const request: CreatePresupuestoRequest = {
           clienteId: this.clienteId(),
           numero: this.numero().trim(),
-          fechaValidez: this.fechaValidez() || null,
+          fechaValidez: this.toInstante(this.fechaValidez()),
           notas: this.notas().trim() || null,
           lineas: lineasRequest,
         };
@@ -192,6 +196,10 @@ export class PresupuestoFormModal {
     } finally {
       this.isSaving.set(false);
     }
+  }
+
+  private toInstante(fecha: string): string | null {
+    return fecha ? `${fecha}T00:00:00Z` : null;
   }
 
   private resetForm(): void {

@@ -248,6 +248,19 @@ describe('PresupuestoFormModal', () => {
       expect(presupuestosServiceStub.create).not.toHaveBeenCalled();
     });
 
+    it('blocks and sets formError when a línea is left with precioUnitario empty (null)', async () => {
+      component.openForCreate();
+      component.clienteId.set('c1');
+      component.numero.set('PRE-2026-002');
+      const row = component.lineas()[0];
+      component.updateLinea(row.rowId, { descripcion: 'x', cantidad: 1 }); // precioUnitario stays null
+
+      await component.onSubmit();
+
+      expect(component.formError()).toBe('Línea 1: el precio unitario es obligatorio.');
+      expect(presupuestosServiceStub.create).not.toHaveBeenCalled();
+    });
+
     it('blocks and sets formError when a línea has a negative precioUnitario', async () => {
       component.openForCreate();
       component.clienteId.set('c1');
@@ -289,7 +302,7 @@ describe('PresupuestoFormModal', () => {
       expect(presupuestosServiceStub.create).toHaveBeenCalledWith({
         clienteId: 'c1',
         numero: 'PRE-2026-002',
-        fechaValidez: '2026-09-15',
+        fechaValidez: '2026-09-15T00:00:00Z',
         notas: 'Nota',
         lineas: [
           {
@@ -320,7 +333,7 @@ describe('PresupuestoFormModal', () => {
       await component.onSubmit();
 
       expect(presupuestosServiceStub.update).toHaveBeenCalledWith('p1', {
-        fechaValidez: '2026-09-15',
+        fechaValidez: '2026-09-15T00:00:00Z',
         notas: 'Nota',
         lineas: [
           {
@@ -347,6 +360,21 @@ describe('PresupuestoFormModal', () => {
 
       expect(presupuestosServiceStub.create).toHaveBeenCalledWith(
         expect.objectContaining({ fechaValidez: null, notas: null }),
+      );
+    });
+
+    it('sends fechaValidez as a UTC midnight instant (T00:00:00Z), not the bare date', async () => {
+      component.openForCreate();
+      component.clienteId.set('c1');
+      component.numero.set('PRE-2026-002');
+      component.fechaValidez.set('2026-09-15');
+      const row = component.lineas()[0];
+      component.updateLinea(row.rowId, { descripcion: 'x', cantidad: 1, precioUnitario: 1 });
+
+      await component.onSubmit();
+
+      expect(presupuestosServiceStub.create).toHaveBeenCalledWith(
+        expect.objectContaining({ fechaValidez: '2026-09-15T00:00:00Z' }),
       );
     });
 
