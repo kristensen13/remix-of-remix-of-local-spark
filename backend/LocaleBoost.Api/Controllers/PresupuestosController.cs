@@ -121,7 +121,8 @@ public class PresupuestosController : ControllerBase
         presupuesto.UpdatedAt = DateTime.UtcNow;
 
         _db.LineasPresupuesto.RemoveRange(presupuesto.Lineas);
-        presupuesto.Lineas = request.Lineas.Select(l => new LineaPresupuesto
+
+        var nuevasLineas = request.Lineas.Select(l => new LineaPresupuesto
         {
             Id = Guid.NewGuid(),
             PresupuestoId = presupuesto.Id,
@@ -132,6 +133,13 @@ public class PresupuestosController : ControllerBase
             TipoIva = l.TipoIva,
             Orden = l.Orden
         }).ToList();
+
+        // Se añaden explícitamente al DbSet para que EF Core las marque como Added:
+        // al asignarlas solo a la propiedad de navegación, el change tracker las
+        // infiere como Modified (por tener una Id no-default), generando UPDATEs
+        // sobre filas que aún no existen y disparando DbUpdateConcurrencyException.
+        _db.LineasPresupuesto.AddRange(nuevasLineas);
+        presupuesto.Lineas = nuevasLineas;
 
         await _db.SaveChangesAsync();
 
