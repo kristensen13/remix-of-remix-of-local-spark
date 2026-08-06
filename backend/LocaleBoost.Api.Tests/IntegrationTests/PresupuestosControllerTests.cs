@@ -5,7 +5,9 @@ using LocaleBoost.Api.Data;
 using LocaleBoost.Api.Data.Entities;
 using LocaleBoost.Api.Dtos.Auth;
 using LocaleBoost.Api.Dtos.Clientes;
+using LocaleBoost.Api.Dtos.Facturas;
 using LocaleBoost.Api.Dtos.Presupuestos;
+using LocaleBoost.Api.Dtos.Series;
 using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
@@ -129,5 +131,41 @@ public class PresupuestosControllerTests : IClassFixture<CustomWebApplicationFac
         Assert.Equal(2, persisted.Lineas.Count);
         Assert.Contains(persisted.Lineas, l => l.Descripcion == "Línea modificada A");
         Assert.Contains(persisted.Lineas, l => l.Descripcion == "Línea modificada B");
+    }
+
+    [Fact]
+    public async Task GetAll_AfterConversion_IncludesFacturaIdInSummary()
+    {
+        var client = await CreateAuthenticatedClientAsync();
+        var clienteId = await CreateClienteAsync(client);
+
+        var createSerie = await client.PostAsJsonAsync("/api/series", new CreateSerieRequest("FAC", null, 2026, false));
+        createSerie.EnsureSuccessStatusCode();
+        var serie = await createSerie.Content.ReadFromJsonAsync<SerieDto>();
+
+        var createRequest = new CreatePresupuestoRequest(
+            clienteId, "PRE-CONV-001", null, null,
+            new List<LineaPresupuestoRequest>
+            {
+                new(TipoLinea.ServicioPorHoras, "Línea", 1m, 100m, TipoIva.General21, 0)
+            });
+        var createResponse = await client.PostAsJsonAsync("/api/presupuestos", createRequest);
+        var presupuesto = await createResponse.Content.ReadFromJsonAsync<PresupuestoDto>();
+
+        await client.PostAsJsonAsync($"/api/presupuestos/{presupuesto!.Id}/estado",
+            new CambiarEstadoPresupuestoRequest(EstadoPresupuesto.Aceptado));
+
+        var convertirResponse = await client.PostAsJsonAsync(
+            $"/api/presupuestos/{presupuesto.Id}/convertir-a-factura",
+            new ConvertirAFacturaRequest(serie!.Id, null));
+        convertirResponse.EnsureSuccessStatusCode();
+        var factura = await convertirResponse.Content.ReadFromJsonAsync<FacturaDto>();
+
+        var listResponse = await client.GetAsync("/api/presupuestos");
+        listResponse.EnsureSuccessStatusCode();
+        var lista = await listResponse.Content.ReadFromJsonAsync<List<PresupuestoSummaryDto>>();
+
+        var summary = lista!.Single(p => p.Id == presupuesto.Id);
+        Assert.Equal(factura!.Id, summary.FacturaId);
     }
 }

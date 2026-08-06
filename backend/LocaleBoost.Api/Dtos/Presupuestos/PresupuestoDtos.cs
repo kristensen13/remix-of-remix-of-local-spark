@@ -22,7 +22,7 @@ public record PresupuestoDto(
     DateTime UpdatedAt);
 
 public record PresupuestoSummaryDto(
-    Guid Id, Guid ClienteId, string Numero, EstadoPresupuesto Estado, DateTime FechaEmision, int NumeroLineas);
+    Guid Id, Guid ClienteId, string Numero, EstadoPresupuesto Estado, DateTime FechaEmision, int NumeroLineas, Guid? FacturaId);
 
 public record CreatePresupuestoRequest(
     Guid ClienteId,
@@ -50,5 +50,5 @@ public static class PresupuestoMappingExtensions
         p.CreatedAt, p.UpdatedAt);
 
     public static PresupuestoSummaryDto ToSummaryDto(this Presupuesto p) => new(
-        p.Id, p.ClienteId, p.Numero, p.Estado, p.FechaEmision, p.Lineas.Count);
+        p.Id, p.ClienteId, p.Numero, p.Estado, p.FechaEmision, p.Lineas.Count, p.FacturaId);
 }
