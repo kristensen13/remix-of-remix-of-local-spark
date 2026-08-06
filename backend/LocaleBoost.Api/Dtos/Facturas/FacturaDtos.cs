@@ -14,6 +14,7 @@ public record FacturaDto(
     EstadoFactura Estado,
     DateTime FechaEmision,
     DateTime? FechaVencimiento,
+    DateTime? FechaCobro,
     decimal? PorcentajeRetencionIrpf,
     decimal BaseImponible,
     decimal TotalIva,
@@ -38,7 +39,7 @@ public record RectificarFacturaRequest(
 public static class FacturaMappingExtensions
 {
     public static FacturaDto ToDto(this Factura f) => new(
-        f.Id, f.ClienteId, f.SerieId, f.NumeroCompleto, f.Estado, f.FechaEmision, f.FechaVencimiento,
+        f.Id, f.ClienteId, f.SerieId, f.NumeroCompleto, f.Estado, f.FechaEmision, f.FechaVencimiento, f.FechaCobro,
         f.PorcentajeRetencionIrpf, f.BaseImponible, f.TotalIva, f.TotalRetencion, f.Total,
         f.PresupuestoOrigenId, f.FacturaRectificadaId, f.PdfUrl,
         f.Lineas.OrderBy(l => l.Orden)

@@ -11,6 +11,7 @@ public class Factura
     public EstadoFactura Estado { get; set; } = EstadoFactura.Emitida;
     public DateTime FechaEmision { get; set; }
     public DateTime? FechaVencimiento { get; set; }
+    public DateTime? FechaCobro { get; set; }
     public decimal? PorcentajeRetencionIrpf { get; set; }
     public decimal BaseImponible { get; set; }
     public decimal TotalIva { get; set; }

@@ -73,6 +73,7 @@ public class FacturasController : ControllerBase
         }
 
         factura.Estado = EstadoFactura.Cobrada;
+        factura.FechaCobro = request.FechaCobro;
         await _db.SaveChangesAsync();
 
         return Ok(factura.ToDto());
