@@ -31,6 +31,13 @@ public record FacturaSummaryDto(
 
 public record MarcarCobradaRequest(DateTime FechaCobro);
 
+public record CreateFacturaRequest(
+    Guid ClienteId,
+    Guid SerieId,
+    DateTime? FechaVencimiento,
+    decimal? PorcentajeRetencionIrpf,
+    List<LineaPresupuestoRequest> Lineas);
+
 public record RectificarFacturaRequest(
     Guid SerieRectificativaId,
     string Motivo,

@@ -25,6 +25,78 @@ public class FacturasController : ControllerBase
 
     protected Guid CurrentUserId => Guid.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier)!);
 
+    [HttpPost]
+    public async Task<ActionResult<FacturaDto>> Create(CreateFacturaRequest request)
+    {
+        var clienteExiste = await _db.Clientes.AnyAsync(c => c.Id == request.ClienteId && c.UserId == CurrentUserId);
+        if (!clienteExiste)
+        {
+            return BadRequest(new { message = "El cliente indicado no existe." });
+        }
+
+        if (request.Lineas is null || request.Lineas.Count == 0)
+        {
+            return BadRequest(new { message = "La factura debe tener al menos una línea." });
+        }
+
+        var serie = await _db.Series.SingleOrDefaultAsync(s => s.Id == request.SerieId && s.UserId == CurrentUserId);
+        if (serie is null)
+        {
+            return BadRequest(new { message = "La serie indicada no existe." });
+        }
+        if (serie.EsRectificativa)
+        {
+            return BadRequest(new { message = "No se puede usar una serie rectificativa para una factura normal." });
+        }
+
+        await using var transaction = await _db.Database.BeginTransactionAsync();
+
+        serie.UltimoNumero += 1;
+        var numeroAsignado = serie.UltimoNumero;
+        var numeroCompleto = $"{serie.Codigo}-{serie.Anio}-{numeroAsignado:D5}";
+
+        var totales = _calculo.CalcularTotales(
+            request.Lineas.Select(l => (l.Cantidad, l.PrecioUnitario, l.TipoIva)),
+            request.PorcentajeRetencionIrpf);
+
+        var ahora = DateTime.UtcNow;
+
+        var factura = new Factura
+        {
+            Id = Guid.NewGuid(),
+            UserId = CurrentUserId,
+            ClienteId = request.ClienteId,
+            SerieId = serie.Id,
+            Numero = numeroAsignado,
+            NumeroCompleto = numeroCompleto,
+            Estado = EstadoFactura.Emitida,
+            FechaEmision = ahora,
+            FechaVencimiento = request.FechaVencimiento,
+            PorcentajeRetencionIrpf = request.PorcentajeRetencionIrpf,
+            BaseImponible = totales.BaseImponible,
+            TotalIva = totales.TotalIva,
+            TotalRetencion = totales.TotalRetencion,
+            Total = totales.Total,
+            CreatedAt = ahora,
+            Lineas = request.Lineas.Select(l => new LineaFactura
+            {
+                Id = Guid.NewGuid(),
+                Tipo = l.Tipo,
+                Descripcion = l.Descripcion,
+                Cantidad = l.Cantidad,
+                PrecioUnitario = l.PrecioUnitario,
+                TipoIva = l.TipoIva,
+                Orden = l.Orden
+            }).ToList()
+        };
+
+        _db.Facturas.Add(factura);
+        await _db.SaveChangesAsync();
+        await transaction.CommitAsync();
+
+        return CreatedAtAction(nameof(GetById), new { id = factura.Id }, factura.ToDto());
+    }
+
     [HttpGet]
     public async Task<ActionResult<List<FacturaSummaryDto>>> GetAll([FromQuery] Guid? clienteId)
     {

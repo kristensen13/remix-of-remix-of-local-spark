@@ -124,4 +124,81 @@ public class FacturasControllerTests : IClassFixture<CustomWebApplicationFactory
         var persisted = await db.Facturas.SingleAsync(f => f.Id == factura.Id);
         Assert.Equal(fechaCobro, persisted.FechaCobro);
     }
+
+    [Fact]
+    public async Task Create_WithValidRequest_ReturnsCreatedFacturaWithSequentialNumeroAndTotales()
+    {
+        var client = await CreateAuthenticatedClientAsync();
+        var clienteId = await CreateClienteAsync(client);
+        var serieId = await CreateSerieAsync(client);
+
+        var request = new CreateFacturaRequest(
+            clienteId, serieId, null, 10m,
+            new List<LineaPresupuestoRequest>
+            {
+                new(TipoLinea.ServicioPorHoras, "Consultoría", 4m, 100m, TipoIva.General21, 0),
+                new(TipoLinea.Producto, "Licencia", 1m, 50m, TipoIva.Reducido10, 1)
+            });
+
+        var response = await client.PostAsJsonAsync("/api/facturas", request);
+        var body = await response.Content.ReadAsStringAsync();
+        Assert.True(
+            response.StatusCode == HttpStatusCode.Created,
+            $"Expected 201 Created but got {(int)response.StatusCode} {response.StatusCode}. Body: {body}");
+
+        var factura = await response.Content.ReadFromJsonAsync<FacturaDto>();
+        Assert.NotNull(factura);
+        Assert.Equal(EstadoFactura.Emitida, factura!.Estado);
+        Assert.EndsWith("-00001", factura.NumeroCompleto);
+        Assert.Equal(450m, factura.BaseImponible);
+        Assert.Equal(89m, factura.TotalIva);
+        Assert.Equal(45m, factura.TotalRetencion);
+        Assert.Equal(494m, factura.Total);
+        Assert.Equal(2, factura.Lineas.Count);
+    }
+
+    [Fact]
+    public async Task Create_WithNonexistentCliente_ReturnsBadRequest()
+    {
+        var client = await CreateAuthenticatedClientAsync();
+        var serieId = await CreateSerieAsync(client);
+
+        var request = new CreateFacturaRequest(
+            Guid.NewGuid(), serieId, null, null,
+            new List<LineaPresupuestoRequest> { new(TipoLinea.Producto, "Línea", 1m, 10m, TipoIva.General21, 0) });
+
+        var response = await client.PostAsJsonAsync("/api/facturas", request);
+        Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
+    }
+
+    [Fact]
+    public async Task Create_WithRectificativaSerie_ReturnsBadRequest()
+    {
+        var client = await CreateAuthenticatedClientAsync();
+        var clienteId = await CreateClienteAsync(client);
+        var serieRectificativaId = await CreateSerieAsync(client, esRectificativa: true);
+
+        var request = new CreateFacturaRequest(
+            clienteId, serieRectificativaId, null, null,
+            new List<LineaPresupuestoRequest> { new(TipoLinea.Producto, "Línea", 1m, 10m, TipoIva.General21, 0) });
+
+        var response = await client.PostAsJsonAsync("/api/facturas", request);
+        var body = await response.Content.ReadAsStringAsync();
+        Assert.True(
+            response.StatusCode == HttpStatusCode.BadRequest,
+            $"Expected 400 BadRequest but got {(int)response.StatusCode} {response.StatusCode}. Body: {body}");
+    }
+
+    [Fact]
+    public async Task Create_WithNoLineas_ReturnsBadRequest()
+    {
+        var client = await CreateAuthenticatedClientAsync();
+        var clienteId = await CreateClienteAsync(client);
+        var serieId = await CreateSerieAsync(client);
+
+        var request = new CreateFacturaRequest(clienteId, serieId, null, null, new List<LineaPresupuestoRequest>());
+
+        var response = await client.PostAsJsonAsync("/api/facturas", request);
+        Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
+    }
 }
