@@ -60,4 +60,20 @@ describe('MarcarCobradaModal', () => {
     expect(component.formError()).toBe('Solo se pueden marcar como cobradas facturas en estado Emitida.');
     expect(component.dialogEl.nativeElement.close).not.toHaveBeenCalled();
   });
+
+  it('onSubmit() blocks and sets formError when fechaCobro is cleared', async () => {
+    component.open('f1');
+    component.fechaCobro.set('');
+
+    await component.onSubmit();
+
+    expect(component.formError()).toBe('La fecha de cobro es obligatoria.');
+    expect(facturasServiceStub.marcarCobrada).not.toHaveBeenCalled();
+  });
+
+  it('onSubmit() does not call service when facturaId is null (before open)', async () => {
+    await component.onSubmit();
+
+    expect(facturasServiceStub.marcarCobrada).not.toHaveBeenCalled();
+  });
 });
