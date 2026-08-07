@@ -20,6 +20,7 @@ const summary1: PresupuestoSummary = {
   estado: EstadoPresupuesto.Borrador,
   fechaEmision: '2026-08-01T00:00:00Z',
   numeroLineas: 1,
+  facturaId: null,
 };
 
 const presupuesto1: Presupuesto = {
