@@ -80,6 +80,7 @@ export interface PresupuestoSummary {
   estado: EstadoPresupuesto;
   fechaEmision: string;
   numeroLineas: number;
+  facturaId: string | null;
 }
 
 export interface LineaPresupuestoRequest {

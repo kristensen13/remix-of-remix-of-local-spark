@@ -47,6 +47,10 @@
                 <button type="button" (click)="onRechazar(p)" class="text-red-600 hover:underline">
                   Rechazar
                 </button>
+              } @else if (p.estado === EstadoPresupuesto.Aceptado && p.facturaId === null) {
+                <button type="button" (click)="onConvertirAFactura(p)" class="text-slate-600 hover:underline">
+                  Convertir a factura
+                </button>
               }
             </td>
           </tr>
@@ -58,4 +62,5 @@
   }
 
   <app-presupuesto-form-modal (saved)="onSaved()" />
+  <app-convertir-a-factura-modal (converted)="onFacturaCreada()" />
 </div>

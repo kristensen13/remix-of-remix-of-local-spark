@@ -1,10 +1,14 @@
 import { TestBed } from '@angular/core/testing';
 import { signal } from '@angular/core';
+import { Router } from '@angular/router';
 import { Presupuestos } from './presupuestos';
 import { PresupuestosService } from './presupuestos.service';
 import { ClientesService } from '../clientes/clientes.service';
+import { SeriesService } from '../series/series.service';
 import { PresupuestoFormModal } from './presupuesto-form-modal';
+import { ConvertirAFacturaModal } from './convertir-a-factura-modal';
 import { Cliente } from '../../core/models/cliente.models';
+import { Serie } from '../../core/models/serie.models';
 import {
   EstadoPresupuesto,
   Presupuesto,
@@ -35,6 +39,7 @@ const summaryBorrador: PresupuestoSummary = {
   estado: EstadoPresupuesto.Borrador,
   fechaEmision: '2026-08-01T00:00:00Z',
   numeroLineas: 1,
+  facturaId: null,
 };
 
 const summaryEnviado: PresupuestoSummary = {
@@ -44,6 +49,7 @@ const summaryEnviado: PresupuestoSummary = {
   estado: EstadoPresupuesto.Enviado,
   fechaEmision: '2026-08-01T00:00:00Z',
   numeroLineas: 2,
+  facturaId: null,
 };
 
 const summaryAceptado: PresupuestoSummary = {
@@ -53,7 +59,20 @@ const summaryAceptado: PresupuestoSummary = {
   estado: EstadoPresupuesto.Aceptado,
   fechaEmision: '2026-08-01T00:00:00Z',
   numeroLineas: 1,
+  facturaId: null,
 };
+
+const summaryAceptadoConvertido: PresupuestoSummary = {
+  id: 'p4',
+  clienteId: 'c1',
+  numero: 'PRE-2026-004',
+  estado: EstadoPresupuesto.Aceptado,
+  fechaEmision: '2026-08-01T00:00:00Z',
+  numeroLineas: 1,
+  facturaId: 'f1',
+};
+
+const serie1: Serie = { id: 's1', codigo: 'FAC', descripcion: null, ultimoNumero: 0, anio: 2026, esRectificativa: false };
 
 const detalle1: Presupuesto = {
   id: 'p1',
@@ -81,7 +100,7 @@ const detalle1: Presupuesto = {
 
 function makeStubs() {
   const presupuestosServiceStub = {
-    presupuestos: signal<PresupuestoSummary[]>([summaryBorrador, summaryEnviado, summaryAceptado]),
+    presupuestos: signal<PresupuestoSummary[]>([summaryBorrador, summaryEnviado, summaryAceptado, summaryAceptadoConvertido]),
     isLoading: signal(false),
     errorMessage: signal<string | null>(null),
     load: vi.fn().mockResolvedValue(undefined),
@@ -92,30 +111,41 @@ function makeStubs() {
     clientes: signal<Cliente[]>([cliente1]),
     load: vi.fn().mockResolvedValue(undefined),
   };
-  return { presupuestosServiceStub, clientesServiceStub };
+  const seriesServiceStub = {
+    series: signal<Serie[]>([serie1]),
+    load: vi.fn().mockResolvedValue(undefined),
+  };
+  return { presupuestosServiceStub, clientesServiceStub, seriesServiceStub };
 }
 
 describe('Presupuestos', () => {
   let component: Presupuestos;
   let presupuestosServiceStub: ReturnType<typeof makeStubs>['presupuestosServiceStub'];
   let clientesServiceStub: ReturnType<typeof makeStubs>['clientesServiceStub'];
+  let seriesServiceStub: ReturnType<typeof makeStubs>['seriesServiceStub'];
+  let routerStub: { navigate: ReturnType<typeof vi.fn> };
   let modalStub: { openForCreate: ReturnType<typeof vi.fn>; openForEdit: ReturnType<typeof vi.fn> };
 
   beforeEach(() => {
     const stubs = makeStubs();
     presupuestosServiceStub = stubs.presupuestosServiceStub;
     clientesServiceStub = stubs.clientesServiceStub;
+    seriesServiceStub = stubs.seriesServiceStub;
+    routerStub = { navigate: vi.fn() };
     modalStub = { openForCreate: vi.fn(), openForEdit: vi.fn() };
 
     TestBed.configureTestingModule({
       providers: [
         { provide: PresupuestosService, useValue: presupuestosServiceStub },
         { provide: ClientesService, useValue: clientesServiceStub },
+        { provide: SeriesService, useValue: seriesServiceStub },
+        { provide: Router, useValue: routerStub },
       ],
     });
 
     component = TestBed.createComponent(Presupuestos).componentInstance;
     component.modal = modalStub as unknown as PresupuestoFormModal;
+    component.convertirModal = { open: vi.fn() } as unknown as ConvertirAFacturaModal;
   });
 
   it('ngOnInit() loads presupuestos and clientes', () => {
@@ -171,6 +201,21 @@ describe('Presupuestos', () => {
     expect(presupuestosServiceStub.cambiarEstado).not.toHaveBeenCalled();
   });
 
+  it('ngOnInit() also loads series', () => {
+    component.ngOnInit();
+    expect(seriesServiceStub.load).toHaveBeenCalled();
+  });
+
+  it('onConvertirAFactura() opens the convertir modal with the presupuesto id', () => {
+    component.onConvertirAFactura(summaryAceptado);
+    expect(component.convertirModal.open).toHaveBeenCalledWith('p3');
+  });
+
+  it('onFacturaCreada() navigates to /facturas', () => {
+    component.onFacturaCreada();
+    expect(routerStub.navigate).toHaveBeenCalledWith(['/facturas']);
+  });
+
   describe('template rendering', () => {
     function render() {
       TestBed.resetTestingModule();
@@ -179,6 +224,8 @@ describe('Presupuestos', () => {
         providers: [
           { provide: PresupuestosService, useValue: stubs.presupuestosServiceStub },
           { provide: ClientesService, useValue: stubs.clientesServiceStub },
+          { provide: SeriesService, useValue: stubs.seriesServiceStub },
+          { provide: Router, useValue: { navigate: vi.fn() } },
         ],
       });
       const fixture = TestBed.createComponent(Presupuestos);
@@ -189,7 +236,7 @@ describe('Presupuestos', () => {
     it('renders one row per presupuesto with the resolved cliente name', () => {
       const fixture = render();
       const rows = fixture.nativeElement.querySelectorAll('tbody tr');
-      expect(rows.length).toBe(3);
+      expect(rows.length).toBe(4);
 
       const text = fixture.nativeElement.textContent as string;
       expect(text).toContain('PRE-2026-001');
@@ -214,14 +261,22 @@ describe('Presupuestos', () => {
       expect(enviadoRow.textContent).not.toContain('Editar');
     });
 
-    it('shows no action buttons for Aceptado rows', () => {
+    it('shows Convertir a factura only for Aceptado rows without a factura yet', () => {
       const fixture = render();
       const rows = fixture.nativeElement.querySelectorAll('tbody tr');
       const aceptadoRow = rows[2] as HTMLElement;
+      expect(aceptadoRow.textContent).toContain('Convertir a factura');
       expect(aceptadoRow.textContent).not.toContain('Editar');
-      expect(aceptadoRow.textContent).not.toContain('Enviar');
       expect(aceptadoRow.textContent).not.toContain('Aceptar');
-      expect(aceptadoRow.textContent).not.toContain('Rechazar');
+    });
+
+    it('shows no action buttons for Aceptado rows already converted', () => {
+      const fixture = render();
+      const rows = fixture.nativeElement.querySelectorAll('tbody tr');
+      const convertidaRow = rows[3] as HTMLElement;
+      expect(convertidaRow.textContent).not.toContain('Convertir a factura');
+      expect(convertidaRow.textContent).not.toContain('Editar');
+      expect(convertidaRow.textContent).not.toContain('Aceptar');
     });
 
     it('shows the empty-state message when there are no presupuestos', () => {
@@ -232,6 +287,8 @@ describe('Presupuestos', () => {
         providers: [
           { provide: PresupuestosService, useValue: stubs.presupuestosServiceStub },
           { provide: ClientesService, useValue: stubs.clientesServiceStub },
+          { provide: SeriesService, useValue: stubs.seriesServiceStub },
+          { provide: Router, useValue: { navigate: vi.fn() } },
         ],
       });
       const fixture = TestBed.createComponent(Presupuestos);

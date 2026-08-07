@@ -1,8 +1,11 @@
 import { Component, OnInit, ViewChild, inject } from '@angular/core';
 import { HttpErrorResponse } from '@angular/common/http';
+import { Router } from '@angular/router';
 import { PresupuestosService } from './presupuestos.service';
 import { ClientesService } from '../clientes/clientes.service';
+import { SeriesService } from '../series/series.service';
 import { PresupuestoFormModal } from './presupuesto-form-modal';
+import { ConvertirAFacturaModal } from './convertir-a-factura-modal';
 import {
   EstadoPresupuesto,
   ESTADO_PRESUPUESTO_LABELS,
@@ -12,21 +15,25 @@ import { extractErrorMessage } from '../../core/http-error.util';
 
 @Component({
   selector: 'app-presupuestos',
-  imports: [PresupuestoFormModal],
+  imports: [PresupuestoFormModal, ConvertirAFacturaModal],
   templateUrl: './presupuestos.html',
   styleUrl: './presupuestos.css',
 })
 export class Presupuestos implements OnInit {
   protected readonly presupuestosService = inject(PresupuestosService);
   protected readonly clientesService = inject(ClientesService);
+  protected readonly seriesService = inject(SeriesService);
+  private readonly router = inject(Router);
   protected readonly EstadoPresupuesto = EstadoPresupuesto;
   protected readonly ESTADO_PRESUPUESTO_LABELS = ESTADO_PRESUPUESTO_LABELS;
 
   @ViewChild(PresupuestoFormModal) modal!: PresupuestoFormModal;
+  @ViewChild(ConvertirAFacturaModal) convertirModal!: ConvertirAFacturaModal;
 
   ngOnInit(): void {
     void this.presupuestosService.load();
     void this.clientesService.load();
+    void this.seriesService.load();
   }
 
   nombreCliente(clienteId: string): string {
@@ -63,6 +70,14 @@ export class Presupuestos implements OnInit {
       return;
     }
     await this.presupuestosService.cambiarEstado(p.id, EstadoPresupuesto.Rechazado);
+  }
+
+  onConvertirAFactura(p: PresupuestoSummary): void {
+    this.convertirModal.open(p.id);
+  }
+
+  onFacturaCreada(): void {
+    void this.router.navigate(['/facturas']);
   }
 
   onSaved(): void {
