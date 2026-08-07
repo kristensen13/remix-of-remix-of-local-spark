@@ -4,7 +4,15 @@
       <div class="flex items-start justify-between">
         <div>
           <h2 class="text-lg font-semibold">{{ f.numeroCompleto }}</h2>
+          <p class="text-sm text-slate-500">{{ nombreCliente(f.clienteId) }}</p>
           <p class="text-sm text-slate-500">{{ ESTADO_FACTURA_LABELS[f.estado] }}</p>
+          <p class="text-sm text-slate-500">Emitida: {{ formatFecha(f.fechaEmision) }}</p>
+          @if (f.fechaVencimiento) {
+            <p class="text-sm text-slate-500">Vencimiento: {{ formatFecha(f.fechaVencimiento) }}</p>
+          }
+          @if (f.fechaCobro) {
+            <p class="text-sm text-slate-500">Cobrada: {{ formatFecha(f.fechaCobro) }}</p>
+          }
         </div>
         <button type="button" (click)="close()" class="text-sm text-slate-600 hover:underline">Cerrar</button>
       </div>
