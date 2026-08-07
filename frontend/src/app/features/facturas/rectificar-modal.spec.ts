@@ -63,13 +63,18 @@ describe('RectificarModal', () => {
     component.dialogEl = stubDialog();
   });
 
-  it('open() preloads líneas from the original factura with new rowIds', () => {
+  it('open() preloads líneas from the original factura with new rowIds and all fields', () => {
     component.open(facturaOriginal);
 
     expect(component.facturaOriginalId()).toBe('f1');
     expect(component.lineas().length).toBe(1);
-    expect(component.lineas()[0].descripcion).toBe('Consultoría');
-    expect(component.lineas()[0].rowId).not.toBe('l1');
+    const loadedLinea = component.lineas()[0];
+    expect(loadedLinea.descripcion).toBe('Consultoría');
+    expect(loadedLinea.cantidad).toBe(1);
+    expect(loadedLinea.precioUnitario).toBe(100);
+    expect(loadedLinea.tipo).toBe(TipoLinea.ServicioPorHoras);
+    expect(loadedLinea.tipoIva).toBe(TipoIva.General21);
+    expect(loadedLinea.rowId).not.toBe('l1');
     expect(component.dialogEl.nativeElement.showModal).toHaveBeenCalled();
   });
 
@@ -113,6 +118,60 @@ describe('RectificarModal', () => {
       await component.onSubmit();
 
       expect(component.formError()).toBe('La factura rectificativa debe tener al menos una línea.');
+    });
+
+    describe('per-línea validation', () => {
+      it('blocks submit when a línea has an empty descripción', async () => {
+        component.open(facturaOriginal);
+        component.serieRectificativaId.set('s2');
+        component.motivo.set('Error en el importe');
+        const [row1] = component.lineas();
+        component.updateLinea(row1.rowId, { descripcion: '' });
+
+        await component.onSubmit();
+
+        expect(component.formError()).toBe('Línea 1: la descripción es obligatoria.');
+        expect(facturasServiceStub.rectificar).not.toHaveBeenCalled();
+      });
+
+      it('blocks submit when a línea has cantidad <= 0', async () => {
+        component.open(facturaOriginal);
+        component.serieRectificativaId.set('s2');
+        component.motivo.set('Error en el importe');
+        const [row1] = component.lineas();
+        component.updateLinea(row1.rowId, { cantidad: 0 });
+
+        await component.onSubmit();
+
+        expect(component.formError()).toBe('Línea 1: la cantidad debe ser mayor que 0.');
+        expect(facturasServiceStub.rectificar).not.toHaveBeenCalled();
+      });
+
+      it('blocks submit when a línea has missing precioUnitario', async () => {
+        component.open(facturaOriginal);
+        component.serieRectificativaId.set('s2');
+        component.motivo.set('Error en el importe');
+        const [row1] = component.lineas();
+        component.updateLinea(row1.rowId, { precioUnitario: null });
+
+        await component.onSubmit();
+
+        expect(component.formError()).toBe('Línea 1: el precio unitario es obligatorio.');
+        expect(facturasServiceStub.rectificar).not.toHaveBeenCalled();
+      });
+
+      it('blocks submit when a línea has a negative precioUnitario', async () => {
+        component.open(facturaOriginal);
+        component.serieRectificativaId.set('s2');
+        component.motivo.set('Error en el importe');
+        const [row1] = component.lineas();
+        component.updateLinea(row1.rowId, { precioUnitario: -5 });
+
+        await component.onSubmit();
+
+        expect(component.formError()).toBe('Línea 1: el precio unitario no puede ser negativo.');
+        expect(facturasServiceStub.rectificar).not.toHaveBeenCalled();
+      });
     });
   });
 
