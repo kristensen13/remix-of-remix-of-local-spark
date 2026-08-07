@@ -11,6 +11,7 @@ import {
   TipoLinea,
   UpdatePresupuestoRequest,
 } from '../../core/models/presupuesto.models';
+import { ConvertirAFacturaRequest, EstadoFactura, Factura } from '../../core/models/factura.models';
 
 const summary1: PresupuestoSummary = {
   id: 'p1',
@@ -194,5 +195,59 @@ describe('PresupuestosService', () => {
     const result = await getPromise;
     expect(result).toEqual(presupuesto1);
     expect(service.presupuestos()).toEqual([]);
+  });
+
+  it('convertirAFactura() posts the request, reloads the list, and resolves with the created factura', async () => {
+    const request: ConvertirAFacturaRequest = { serieId: 's1', porcentajeRetencionIrpf: null };
+    const facturaCreada: Factura = {
+      id: 'f1',
+      clienteId: 'c1',
+      serieId: 's1',
+      numeroCompleto: 'FAC-2026-00001',
+      estado: EstadoFactura.Emitida,
+      fechaEmision: '2026-08-06T00:00:00Z',
+      fechaVencimiento: null,
+      fechaCobro: null,
+      porcentajeRetencionIrpf: null,
+      baseImponible: 100,
+      totalIva: 21,
+      totalRetencion: 0,
+      total: 121,
+      presupuestoOrigenId: 'p1',
+      facturaRectificadaId: null,
+      pdfUrl: null,
+      lineas: [],
+      createdAt: '2026-08-06T00:00:00Z',
+    };
+
+    const convertirPromise = service.convertirAFactura('p1', request);
+    const postReq = httpMock.expectOne(
+      (r) => r.url === '/api/presupuestos/p1/convertir-a-factura' && r.method === 'POST',
+    );
+    expect(postReq.request.body).toEqual(request);
+    postReq.flush(facturaCreada);
+
+    await Promise.resolve();
+
+    const getReq = httpMock.expectOne((r) => r.url === '/api/presupuestos' && r.method === 'GET');
+    getReq.flush([]);
+
+    const result = await convertirPromise;
+    expect(result).toEqual(facturaCreada);
+  });
+
+  it('convertirAFactura() rejects and does not reload the list on failure', async () => {
+    const request: ConvertirAFacturaRequest = { serieId: 's1', porcentajeRetencionIrpf: null };
+    const convertirPromise = service.convertirAFactura('p1', request);
+    const postReq = httpMock.expectOne(
+      (r) => r.url === '/api/presupuestos/p1/convertir-a-factura' && r.method === 'POST',
+    );
+    postReq.flush(
+      { message: 'Solo se pueden convertir presupuestos en estado Aceptado.' },
+      { status: 409, statusText: 'Conflict' },
+    );
+
+    await expect(convertirPromise).rejects.toBeTruthy();
+    expect(httpMock.match((r) => r.url === '/api/presupuestos' && r.method === 'GET')).toHaveLength(0);
   });
 });

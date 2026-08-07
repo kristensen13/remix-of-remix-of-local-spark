@@ -8,6 +8,7 @@ import {
   PresupuestoSummary,
   UpdatePresupuestoRequest,
 } from '../../core/models/presupuesto.models';
+import { ConvertirAFacturaRequest, Factura } from '../../core/models/factura.models';
 import { extractErrorMessage } from '../../core/http-error.util';
 
 @Service()
@@ -55,5 +56,13 @@ export class PresupuestosService {
 
   async getById(id: string): Promise<Presupuesto> {
     return firstValueFrom(this.http.get<Presupuesto>(`/api/presupuestos/${id}`));
+  }
+
+  async convertirAFactura(id: string, request: ConvertirAFacturaRequest): Promise<Factura> {
+    const factura = await firstValueFrom(
+      this.http.post<Factura>(`/api/presupuestos/${id}/convertir-a-factura`, request),
+    );
+    await this.load();
+    return factura;
   }
 }

@@ -1,0 +1,48 @@
+<dialog #dialogEl class="rounded-lg p-0 backdrop:bg-black/40">
+  <form (ngSubmit)="onSubmit()" class="flex w-96 max-w-full flex-col gap-3 p-6">
+    <h2 class="text-lg font-semibold">Convertir a factura</h2>
+
+    @if (formError()) {
+      <p class="rounded bg-red-50 px-3 py-2 text-sm text-red-700">{{ formError() }}</p>
+    }
+
+    <label class="flex flex-col gap-1 text-sm">
+      Serie *
+      <select
+        [ngModel]="serieId()"
+        (ngModelChange)="serieId.set($event)"
+        name="serieId"
+        class="rounded border border-slate-300 px-3 py-2"
+      >
+        <option [ngValue]="''" disabled>Seleccioná una serie…</option>
+        @for (serie of seriesNoRectificativas(); track serie.id) {
+          <option [ngValue]="serie.id">{{ serie.codigo }} ({{ serie.anio }})</option>
+        }
+      </select>
+    </label>
+
+    <label class="flex flex-col gap-1 text-sm">
+      % Retención IRPF
+      <input
+        [ngModel]="porcentajeRetencionIrpf()"
+        (ngModelChange)="porcentajeRetencionIrpf.set($event)"
+        name="porcentajeRetencionIrpf"
+        type="number"
+        class="w-32 rounded border border-slate-300 px-3 py-2"
+      />
+    </label>
+
+    <div class="mt-2 flex justify-end gap-2">
+      <button type="button" (click)="cancel()" class="rounded px-4 py-2 text-sm text-slate-600 hover:bg-slate-100">
+        Cancelar
+      </button>
+      <button
+        type="submit"
+        [disabled]="isSaving()"
+        class="rounded bg-slate-900 px-4 py-2 text-sm text-white disabled:opacity-50"
+      >
+        {{ isSaving() ? 'Convirtiendo…' : 'Convertir' }}
+      </button>
+    </div>
+  </form>
+</dialog>
