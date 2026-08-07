@@ -1,0 +1,56 @@
+<dialog #dialogEl class="rounded-lg p-0 backdrop:bg-black/40">
+  @if (factura(); as f) {
+    <div class="flex w-[640px] max-w-full flex-col gap-3 p-6">
+      <div class="flex items-start justify-between">
+        <div>
+          <h2 class="text-lg font-semibold">{{ f.numeroCompleto }}</h2>
+          <p class="text-sm text-slate-500">{{ ESTADO_FACTURA_LABELS[f.estado] }}</p>
+        </div>
+        <button type="button" (click)="close()" class="text-sm text-slate-600 hover:underline">Cerrar</button>
+      </div>
+
+      @if (f.presupuestoOrigenId) {
+        <p class="rounded bg-slate-50 px-3 py-2 text-xs text-slate-600">
+          Generada desde el presupuesto {{ f.presupuestoOrigenId }}.
+        </p>
+      }
+      @if (f.facturaRectificadaId) {
+        <p class="rounded bg-slate-50 px-3 py-2 text-xs text-slate-600">
+          Rectifica la factura {{ f.facturaRectificadaId }}.
+        </p>
+      }
+
+      <table class="w-full border-collapse text-left text-xs">
+        <thead>
+          <tr class="border-b border-slate-200 text-slate-500">
+            <th class="py-1">Tipo</th>
+            <th class="py-1">Descripción</th>
+            <th class="py-1">Cantidad</th>
+            <th class="py-1">Precio</th>
+            <th class="py-1">IVA</th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (linea of f.lineas; track linea.id) {
+            <tr class="border-b border-slate-100">
+              <td class="py-1 pr-1">{{ TIPO_LINEA_LABELS[linea.tipo] }}</td>
+              <td class="py-1 pr-1">{{ linea.descripcion }}</td>
+              <td class="py-1 pr-1">{{ linea.cantidad }}</td>
+              <td class="py-1 pr-1">{{ linea.precioUnitario.toFixed(2) }} €</td>
+              <td class="py-1 pr-1">{{ TIPO_IVA_LABELS[linea.tipoIva] }}</td>
+            </tr>
+          }
+        </tbody>
+      </table>
+
+      <div class="flex flex-col items-end gap-0.5 text-sm text-slate-600">
+        <span>Base imponible: {{ f.baseImponible.toFixed(2) }} €</span>
+        <span>IVA: {{ f.totalIva.toFixed(2) }} €</span>
+        @if (f.totalRetencion > 0) {
+          <span>Retención IRPF: -{{ f.totalRetencion.toFixed(2) }} €</span>
+        }
+        <span class="font-semibold text-slate-900">Total: {{ f.total.toFixed(2) }} €</span>
+      </div>
+    </div>
+  }
+</dialog>
