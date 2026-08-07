@@ -7,6 +7,7 @@ import { GeneratedWebsites } from './features/generated-websites/generated-websi
 import { Clientes } from './features/clientes/clientes';
 import { Series } from './features/series/series';
 import { Presupuestos } from './features/presupuestos/presupuestos';
+import { Facturas } from './features/facturas/facturas';
 import { Layout } from './shared/layout/layout';
 import { NotFound } from './shared/not-found/not-found';
 
@@ -23,6 +24,7 @@ export const routes: Routes = [
       { path: 'clientes', component: Clientes },
       { path: 'series', component: Series },
       { path: 'presupuestos', component: Presupuestos },
+      { path: 'facturas', component: Facturas },
       { path: '', pathMatch: 'full', redirectTo: 'search' },
     ],
   },

@@ -1,0 +1,96 @@
+<div class="mx-auto max-w-6xl p-6">
+  <div class="mb-4 flex items-center justify-between">
+    <h1 class="text-xl font-semibold">Facturas</h1>
+    <button type="button" (click)="onNew()" class="rounded bg-slate-900 px-4 py-2 text-sm text-white">
+      Nueva factura
+    </button>
+  </div>
+
+  @if (facturasService.errorMessage()) {
+    <p class="mb-4 rounded bg-red-50 px-3 py-2 text-sm text-red-700">{{ facturasService.errorMessage() }}</p>
+  }
+
+  <div class="mb-4 flex flex-wrap gap-3">
+    <select
+      [ngModel]="filtroClienteId()"
+      (ngModelChange)="onFiltroClienteChange($event)"
+      class="rounded border border-slate-300 px-3 py-2 text-sm"
+    >
+      <option [ngValue]="''">Todos los clientes</option>
+      @for (cliente of clientesService.clientes(); track cliente.id) {
+        <option [ngValue]="cliente.id">{{ cliente.nombre }}</option>
+      }
+    </select>
+
+    <select
+      [ngModel]="filtroEstado()"
+      (ngModelChange)="filtroEstado.set($event)"
+      class="rounded border border-slate-300 px-3 py-2 text-sm"
+    >
+      <option [ngValue]="null">Todos los estados</option>
+      <option [ngValue]="EstadoFactura.Emitida">Emitida</option>
+      <option [ngValue]="EstadoFactura.Cobrada">Cobrada</option>
+      <option [ngValue]="EstadoFactura.Anulada">Anulada</option>
+      <option [ngValue]="EstadoFactura.Rectificada">Rectificada</option>
+    </select>
+
+    <input
+      [ngModel]="filtroNumero()"
+      (ngModelChange)="filtroNumero.set($event)"
+      type="text"
+      placeholder="Buscar por número…"
+      class="rounded border border-slate-300 px-3 py-2 text-sm"
+    />
+  </div>
+
+  @if (facturasService.isLoading()) {
+    <p class="text-sm text-slate-500">Cargando…</p>
+  } @else if (facturasFiltradas().length > 0) {
+    <table class="w-full border-collapse text-left text-sm">
+      <thead>
+        <tr class="border-b border-slate-200 text-slate-500">
+          <th class="py-2">Número</th>
+          <th class="py-2">Cliente</th>
+          <th class="py-2">Fecha emisión</th>
+          <th class="py-2">Estado</th>
+          <th class="py-2">Total</th>
+          <th class="py-2"></th>
+        </tr>
+      </thead>
+      <tbody>
+        @for (f of facturasFiltradas(); track f.id) {
+          <tr class="border-b border-slate-100">
+            <td class="py-2">{{ f.numeroCompleto }}</td>
+            <td class="py-2">{{ nombreCliente(f.clienteId) }}</td>
+            <td class="py-2">{{ formatFecha(f.fechaEmision) }}</td>
+            <td class="py-2">{{ ESTADO_FACTURA_LABELS[f.estado] }}</td>
+            <td class="py-2">{{ f.total.toFixed(2) }} €</td>
+            <td class="py-2 text-right">
+              <button type="button" (click)="onVerDetalle(f)" class="mr-3 text-slate-600 hover:underline">
+                Ver detalle
+              </button>
+              @if (f.estado === EstadoFactura.Emitida) {
+                <button type="button" (click)="onMarcarCobrada(f)" class="mr-3 text-slate-600 hover:underline">
+                  Marcar cobrada
+                </button>
+              }
+              @if (f.estado === EstadoFactura.Emitida || f.estado === EstadoFactura.Cobrada) {
+                <button type="button" (click)="onRectificar(f)" class="mr-3 text-slate-600 hover:underline">
+                  Rectificar
+                </button>
+                <button type="button" (click)="onAnular(f)" class="text-red-600 hover:underline">Anular</button>
+              }
+            </td>
+          </tr>
+        }
+      </tbody>
+    </table>
+  } @else {
+    <p class="text-sm text-slate-500">No hay facturas que coincidan con los filtros.</p>
+  }
+
+  <app-factura-form-modal (saved)="onSaved()" />
+  <app-factura-detalle-modal />
+  <app-marcar-cobrada-modal />
+  <app-rectificar-modal (saved)="onSaved()" />
+</div>
